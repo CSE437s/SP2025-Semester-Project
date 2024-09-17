@@ -1,4 +1,4 @@
-# Project Name: Subletify
+# Project Name: <Insert Here>
 ### Team members: <Insert Here>
 ### TA: <Insert Here>
 
