@@ -1,3 +1,11 @@
+--Create the database first, if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'CSE437') THEN
+        CREATE DATABASE CSE437;
+    END IF;
+END $$;
+
 -- Table: public.users
 
 -- DROP TABLE IF EXISTS public.users;
