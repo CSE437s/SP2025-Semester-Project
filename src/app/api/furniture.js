@@ -4,7 +4,7 @@ const pool = require('../../../db');
 
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM public."furniture_listing";');
+    const result = await pool.query('SELECT * from public."furniture_listing";');
     res.json(result.rows); 
   } catch (err) {
     console.error('Error fetching furniture data:', err);
@@ -13,3 +13,5 @@ router.get('/', async (req, res) => {
 });
 
 module.exports = router; 
+
+

@@ -21,13 +21,17 @@ interface TagsProps {
   setTags: React.Dispatch<React.SetStateAction<string[]>>;
   priceRange: number[];
   setPriceRange: React.Dispatch<React.SetStateAction<number[]>>;
+  ratingValue: number;
+  setRatingValue: React.Dispatch<React.SetStateAction<number>>;
+  colorsValue: string[];
+  setColors: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 function valuetext(value: number) {
   return `${value}`;
 }
 
-export default function Filter({ tags, setTags, priceRange, setPriceRange }: TagsProps) {
+export default function Filter({ tags, setTags, priceRange, setPriceRange, ratingValue, setRatingValue, colorsValue, setColors }: TagsProps) {
   const furnitureItems = [
     { title: 'Sofa' },
     { title: 'Table' },
@@ -44,7 +48,6 @@ export default function Filter({ tags, setTags, priceRange, setPriceRange }: Tag
     'Purple',
     'Black',
     'Grey',
-
   ];
 
   const MenuProps = {
@@ -56,23 +59,18 @@ export default function Filter({ tags, setTags, priceRange, setPriceRange }: Tag
     },
   };
 
-  const [ratingValue, setRatingValue] = React.useState<number | null>(2);
-  const [color, setColor] = React.useState<string[]>([]);
-
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
     setPriceRange(newValue as number[]);
   };
 
-  const handleColorChange = (event: SelectChangeEvent<typeof color>) => {
+  const handleColorChange = (event: SelectChangeEvent<string[]>) => {
     const {
       target: { value },
     } = event;
-    setColor(
-      // On autofill we get a stringified value.
+    setColors(
       typeof value === 'string' ? value.split(',') : value,
     );
   };
-
 
   return (
     <Box
@@ -124,8 +122,9 @@ export default function Filter({ tags, setTags, priceRange, setPriceRange }: Tag
           name="simple-controlled"
           value={ratingValue}
           onChange={(event, newValue) => {
-            setRatingValue(newValue);
-          }} />
+            setRatingValue(newValue !== null ? newValue : 0);
+          }} 
+        />
       </Box>
 
       <Box sx={{ marginTop: '30px' }}>
@@ -135,7 +134,7 @@ export default function Filter({ tags, setTags, priceRange, setPriceRange }: Tag
             labelId="demo-multiple-checkbox-label"
             id="demo-multiple-checkbox"
             multiple
-            value={color}
+            value={colorsValue}
             onChange={handleColorChange}
             input={<OutlinedInput label="Color" />}
             renderValue={(selected) => selected.join(', ')}
@@ -143,16 +142,13 @@ export default function Filter({ tags, setTags, priceRange, setPriceRange }: Tag
           >
             {colorItems.map((name) => (
               <MenuItem key={name} value={name}>
-                <Checkbox checked={color.includes(name)} />
+                <Checkbox checked={colorsValue.includes(name)} />
                 <ListItemText primary={name} />
               </MenuItem>
             ))}
           </Select>
         </FormControl>
       </Box>
-
     </Box>
-
-    
   );
 }
