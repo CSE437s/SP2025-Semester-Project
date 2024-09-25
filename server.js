@@ -2,6 +2,7 @@ const express = require('express');
 const next = require('next');
 const path = require('path');
 const furnitureRoutes = require('./src/app/api/furniture'); 
+const apartmentRoutes = require('./src/app/api/apartment'); 
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -15,6 +16,7 @@ app.prepare().then(() => {
 
 
   server.use('/api/furniture', furnitureRoutes); 
+  server.use('/api/apartment', apartmentRoutes);
 
  
   server.all('*', (req, res) => {

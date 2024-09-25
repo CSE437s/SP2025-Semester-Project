@@ -13,8 +13,8 @@ interface ApartmentCardProps {
 
 export const ApartmentCard = ({ title, address, price, imageUrl }: ApartmentCardProps) => {
   return (
-    <Card sx={{ maxWidth: 345, borderRadius: 2, boxShadow: 3 }}>
-      <CardMedia component="img" height="140" image={imageUrl} alt={title} />
+    <Card sx={{ maxWidth: 280, borderRadius: 2, boxShadow: 3 }}>
+      <CardMedia component="img" height="120" image={imageUrl} alt={title} />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           {title}
