@@ -24,13 +24,29 @@ interface Location {
 
 const Maps: React.FC<MapsProps> = ({ locations }) => {
     if (locations[0] === undefined){
+      return (
+      <MapContainer
+      //brookings as center
+        center={[38.648, -90.3052]} 
+        zoom={14}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={false}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+
+      </MapContainer>
+    );
 
     }else{
     return (
     
       <MapContainer
-        center={[locations[0].latitude , locations[0].longitude]} 
-        zoom={13}
+       //brookings as centers
+      center={[38.648, -90.3052]} 
+        zoom={14}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
       >

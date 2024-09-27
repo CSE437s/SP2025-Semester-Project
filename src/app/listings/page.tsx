@@ -96,8 +96,7 @@ const Listings = () => {
       setFilteredItems(validFilteredItems);
 
       setFilteredItems(newFilteredItems.filter(item => item !== null));
-      const validFilteredLocations = locations.filter((_, index) => validFilteredItems.some(item => item.id === apartmentItems[index].id));
-      
+      let validFilteredLocations = locations.filter((_, index) => validFilteredItems.some(item => item.id === apartmentItems[index].id));
       setFilteredLocations(validFilteredLocations);
     };
   
@@ -108,8 +107,7 @@ const Listings = () => {
     <div style={{ display: 'flex', padding: '30px', flexDirection: 'column' }}>
       {/* Map Section */}
       <div style={{ position: 'fixed', width: '600px', height: '1000px', top: '100px', left: '30px', zIndex: 1000 }}>
-      <Maps locations={filteredLocations} /> 
-
+            <Maps locations={filteredLocations} /> 
       </div>
       
       {/* Apartment Listings */}
