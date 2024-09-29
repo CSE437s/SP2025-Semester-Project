@@ -3,16 +3,19 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Link from 'next/link';
 
 interface ApartmentCardProps {
   title: string;
   address: string;
   price: string;
   imageUrl: string;
+  id: number;
 }
 
-export const ApartmentCard = ({ title, address, price, imageUrl }: ApartmentCardProps) => {
+export const ApartmentCard = ({ title, address, price, imageUrl, id }: ApartmentCardProps) => {
   return (
+    <Link href={`/listings/${id}`} passHref>
     <Card sx={{ maxWidth: 280, borderRadius: 2, boxShadow: 3 }}>
       <CardMedia component="img" height="120" image={imageUrl} alt={title} />
       <CardContent>
@@ -29,5 +32,6 @@ export const ApartmentCard = ({ title, address, price, imageUrl }: ApartmentCard
         </Box>
       </CardContent>
     </Card>
+    </Link>
   );
 };
