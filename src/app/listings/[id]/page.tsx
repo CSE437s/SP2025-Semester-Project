@@ -21,7 +21,7 @@ interface apartmentItem {
 const ApartmentDescriptionPage = () => {
   const router = useRouter();
   console.log("iam here")
-  const params = useParams<{ tag: string; item: string }>()
+  const params = useParams<{ id: string }>()
   const id  = params['id']; 
 
 
@@ -59,7 +59,7 @@ const ApartmentDescriptionPage = () => {
       <p>Price: ${apartmentItem.price}</p>
       <p>description: {apartmentItem.description}</p>
       <p>amenities: {apartmentItem.amenities}</p>
-      <p># of bedrooms: ${apartmentItem.bedrooms}</p>
+      <p># of bedrooms: {apartmentItem.bedrooms}</p>
       <p># of bathrooms: {apartmentItem.bathrooms}</p>
       <p>policies: {apartmentItem.policies}</p>
       <p>rating: {apartmentItem.rating}</p>

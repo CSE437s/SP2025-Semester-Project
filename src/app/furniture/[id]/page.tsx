@@ -19,7 +19,7 @@ interface FurnitureItem {
 const FurnitureDescriptionPage = () => {
   const router = useRouter();
   console.log("iam here")
-  const params = useParams<{ tag: string; item: string }>()
+  const params = useParams<{ id: string }>()
   const id  = params['id']; 
   console.log(id);
 
