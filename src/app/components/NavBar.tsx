@@ -56,7 +56,7 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: 'none' } }}
           >
-            {/* Icon if needed */}
+      
           </IconButton>
           <Typography
             variant="h6"
