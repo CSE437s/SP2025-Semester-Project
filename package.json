@@ -19,6 +19,7 @@
     "@mui/material": "^6.1.0",
     "@react-google-maps/api": "^2.19.3",
     "axios": "^1.7.7",
+    "cors": "^2.8.5",
     "express": "^4.21.0",
     "leaflet": "^1.9.4",
     "next": "^14.2.11",
