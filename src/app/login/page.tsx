@@ -4,8 +4,8 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Button, TextField, Typography, Container, Box, Tabs, Tab } from '@mui/material';
-import { useRouter } from 'next/router'
-import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react';
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Email is required'),
@@ -15,7 +15,8 @@ const validationSchema = Yup.object({
 
 const LoginPage = () => {
   const [value, setValue] = React.useState(0); // 0 for Sign In, 1 for Sign Up
-
+  const router = useRouter();
+  const { data: session } = useSession(); // Get the current session
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -24,56 +25,28 @@ const LoginPage = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      // console.log('Form submitted', values);
-      
-      // // Make API call
-      // const response = await fetch(value === 0 ? '/api/auth/login' : '/api/user/create', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     email: values.email,
-      //     password: values.password,
-      //   }),
-      // });
-
-      // if (response.ok) {
-      //   router.push('/furniture');
-      // } else {
-      //   console.log("Authentication error");
-      // }
-      
-      // Reset the form (optional)
-      
-      if (value === 0) {
-        console.log(values);
-
-
-        let res = await signIn("credentials", {
+      if (value === 0) { // Sign In
+        const res = await signIn("credentials", {
+        
           email: values.email,
           password: values.password,
-         // callbackUrl: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}`,
+          callbackUrl: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/furniture`, // Redirect to furniture page on success
           redirect: false,
         });
-    
+
+        // Check if sign in was successful
         if (res?.ok) {
-          // toast success
-          console.log("success");
-          return;
+          console.log('User signed in:', session.user); 
+          //router.push('/furniture'); // Redirect to furniture page
         } else {
-          // Toast failed
-          // setError("Failed! Check you input and try again.");
-          // return;
           console.log("Failed", res);
         }
-        return res;
-      } else {
+      } else { // Sign Up
         let userData = {
           email: values.email,
           password: values.password,
         };
 
-        console.log(userData)
-    
         // Make call to backend to create user
         const res = await fetch("http://localhost:3000/api/user/create", {
           method: "POST",
@@ -82,16 +55,15 @@ const LoginPage = () => {
             "Content-Type": "application/json",
           },
         });
-    
+
         if (res.ok) {
-          const data = await res.json();
-          console.log(data);
-          // registration success
+          // Handle successful registration, redirect to furniture page
+          router.push('/furniture');
         } else {
-          //registration faled
+          console.log("Registration failed");
         }
       }
-      formik.resetForm();
+      formik.resetForm(); // Reset the form after submission
     },
   });
 

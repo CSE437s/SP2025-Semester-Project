@@ -1,8 +1,7 @@
 const express = require('express');
 const next = require('next');
-const cors = require('cors'); // CommonJS style
+const cors = require('cors'); 
 const path = require('path');
-const cors = require('cors');
 const furnitureRoutes = require('./src/app/api/furniture'); 
 const apartmentRoutes = require('./src/app/api/apartment'); 
 
@@ -21,9 +20,10 @@ app.prepare().then(() => {
   server.use(cors({
     origin: 'http://localhost:3000', 
   }));
-
+  
 
   server.use('/api/furniture', furnitureRoutes); 
+  server.use('/api/apartment', apartmentRoutes);
 
   // Catch all other requests
   server.all('*', (req, res) => {
