@@ -58,8 +58,7 @@ model FurnitureListing {
   description String
   condition   String  @db.VarChar(20)
   colors      Json?
-  rating      Int
-
+  pics        Bytes[]
   // Foreign key relation to users
   user        User    @relation(fields: [user_id], references: [id])
 
