@@ -112,7 +112,13 @@ const Listings = () => {
     filterItems();
   }, [apartmentItems, locations, priceRange, distRange, bedNum, bathNum]); 
 
+  let hi = [''];
+filteredItems.filter(item => {
+  hi.push(item.location);
+});
 
+
+console.log(hi);
   return (
 
 
@@ -128,7 +134,7 @@ const Listings = () => {
 
       {/* Map Section */}
       <div style={{ position: 'fixed', width: '600px', height: '1000px', top: '100px', left: '30px', zIndex: 1000 }}>
-            <Maps locations={filteredLocations} /> 
+            <Maps locations={filteredLocations} names={hi} /> 
       </div>
       
       {/* Apartment Listings */}

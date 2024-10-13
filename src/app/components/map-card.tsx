@@ -12,12 +12,13 @@ interface Location {
  
   interface MapCardProps {
     locations: Location[]; 
+    names: string[];
   }
   
-  const MapCard: React.FC<MapCardProps> = ({ locations }) => {
+  const MapCard: React.FC<MapCardProps> = ({ locations, names}) => {
     return (
       <div style={{ height: '60%', width: '100%' }}>
-        <Maps locations={locations} /> 
+        <Maps locations={locations} names = {names} /> 
       </div>
     );
   };

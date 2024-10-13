@@ -48,7 +48,6 @@ const FurniturePage = () => {
   }, []);
 
   const filteredItems = furnitureItems.filter(item => {
-    console.log("pics: ",item.pics);
     const isInPriceRange = item.price >= priceRange[0] && item.price <= priceRange[1];
     const isTagged = tags.length === 0 || tags.some(tag => item.description.toLowerCase().includes(tag.toLowerCase()));
     const isInRating = item.rating >= ratingValue;
@@ -72,7 +71,7 @@ const FurniturePage = () => {
 
 <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px' }}>
       <Link href="/furniture/upload" passHref>
-        <Button variant="contained">Add Listing</Button>
+        <Button variant="contained">Add Furniture</Button>
       </Link>
     </div>
 

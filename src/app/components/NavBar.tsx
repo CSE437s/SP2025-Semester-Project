@@ -2,25 +2,44 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { AppBar, Box, CssBaseline, Divider, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar, Typography, Button } from '@mui/material';
 
-const drawerWidth = 240;
 
-//TODO: implement these pages
+
+const drawerWidth = 240;
 const navItems = [
   { text: 'Furniture', href: '/furniture' }, 
   { text: 'Listings', href: '/listings' },   
-  { text: 'Messages', href: '/messages' },   
-  { text: 'Login', href: '/login' }          
+ // { text: 'Messages', href: '/messages' },   
+  { text: 'Login', href: '/login' },   
+  {text: 'Sign Out', href: '/signout'}      
 ];
 
 export default function DrawerAppBar(props: { window?: () => Window }) {
+
+  const { data: session } = useSession();
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
+
+
+  const filteredItems = navItems.filter(item => {
+    let isSignedIn = true;
+
+    
+    if (session && item.text == 'Login'){
+      isSignedIn = false;
+    }else if (!session && item.text == 'Sign Out' ){
+      isSignedIn = false;
+    }
+    return isSignedIn;
+  });
+
+
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
@@ -66,7 +85,7 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
             Subletify
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-            {navItems.map((item) => (
+            {filteredItems.map((item) => (
               <Button key={item.text} sx={{ color: '#fff' }}>
                 <Link href={item.href} passHref>
                   {item.text}

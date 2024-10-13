@@ -20,14 +20,16 @@ interface Location {
   
   interface MapsProps {
     locations: Location[]; 
+    names: string[];
   }
 
-const Maps: React.FC<MapsProps> = ({ locations }) => {
+const Maps: React.FC<MapsProps> = ({ locations , names }) => {
+  console.log("names",names);
     if (locations[0] === undefined){
       return (
       <MapContainer
       //brookings as center
-        center={[38.648, -90.3052]} 
+        center={[38.648942, -90.311551]}  
         zoom={14}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
@@ -45,7 +47,7 @@ const Maps: React.FC<MapsProps> = ({ locations }) => {
     
       <MapContainer
        //brookings as centers
-      center={[38.648, -90.3052]} 
+       center={[38.648942, -90.311551]}
         zoom={13}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
@@ -57,7 +59,7 @@ const Maps: React.FC<MapsProps> = ({ locations }) => {
         {locations.map((location, index) => (
           <Marker key={index} position={[location.latitude, location.longitude]} icon={customIcon}>
             <Popup>
-              Location: {location.latitude}, {location.longitude}
+              Location: {names[index + 1]}
             </Popup>
           </Marker>
         ))}

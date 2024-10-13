@@ -9,13 +9,19 @@ import InputAdornment from '@mui/material/InputAdornment';
 import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import {  useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 
 export default function ListingUpload() {
   const [files, setFiles] = React.useState<File[]>([]); // State to hold files
   const { data: session } = useSession();
   const router = useRouter();
+
+  if (!session || !session.user?.id) {
+    alert("You must be logged in to upload an apartment listing.");
+    router.push('/listings');
+  }
+
   const [formData, setFormData] = React.useState({
    
     title: '',
@@ -65,11 +71,7 @@ export default function ListingUpload() {
   // Handle form submission
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    if (!session || !session.user.id) {
-      alert("You must be logged in to upload an apartment listing.");
-      return;
-    }
+  
 
     const byteArrays = await convertFilesToByteArray();
 

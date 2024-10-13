@@ -32,10 +32,11 @@ export default function RootLayout({
         style={{ backgroundColor: 'white' }}
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar /> {/* This is still server-side */}
+        {/* This is still server-side */}
         
         {/* Wrap all client-side components with ClientProvider */}
         <ClientProvider>
+        <Navbar />
           <main>{children}</main>
         </ClientProvider>
       </body>

@@ -15,15 +15,23 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import { useRouter } from 'next/navigation'
 
-export default function ListingUpload() {
+export default async function ListingUpload() {
   const [files, setFiles] = React.useState<File[]>([]);
   const { data: session } = useSession();
   const router = useRouter();
+
+
+  if (!session || !session.user?.id) {
+    alert("You must be logged in to upload a furniture listing.");
+     router.push('/furniture');
+  }
+
+
   const [formData, setFormData] = React.useState({
     price: 0,
     description: '',
     condition: '',
-    colors: [], // Adjusted to store colors as an array
+    colors: [],
   });
 
   // State for managing selected colors
@@ -47,7 +55,7 @@ export default function ListingUpload() {
   const handleColorChange = (event: SelectChangeEvent<string[]>) => {
     const { value } = event.target;
     setColorsValue(value);
-    setFormData({ ...formData, colors: value }); // Update formData with selected colors
+    setFormData({ ...formData, colors: value });
   };
 
   // Function to convert files to byte arrays
@@ -71,21 +79,14 @@ export default function ListingUpload() {
   // Handle form submission
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    if (!session || !session.user.id) {
-      alert("You must be logged in to upload a furniture listing.");
-      return;
-    }
 
     const byteArrays = await convertFilesToByteArray();
 
-    // Prepare the payload for your API
     const payload = {
       ...formData,
       pics: byteArrays, 
-      user_id: session.user.id,
+      user_id: session?.user?.id,
     };
-    console.log(payload);
     const response = await fetch('http://localhost:5001/api/furniture/upload', {
       method: 'POST',
       headers: {

@@ -16,7 +16,7 @@ const validationSchema = Yup.object({
 const LoginPage = () => {
   const [value, setValue] = React.useState(0); // 0 for Sign In, 1 for Sign Up
   const router = useRouter();
-  const { data: session } = useSession(); // Get the current session
+  const { data: session } = useSession(); 
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -37,9 +37,10 @@ const LoginPage = () => {
         // Check if sign in was successful
         if (res?.ok) {
           console.log('User signed in:', session.user); 
-          //router.push('/furniture'); // Redirect to furniture page
+          router.push('/furniture');
         } else {
-          console.log("Failed", res);
+            alert("Incorrect Sign in");
+            console.log("Failed", res);
         }
       } else { // Sign Up
         let userData = {

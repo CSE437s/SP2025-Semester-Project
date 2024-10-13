@@ -27,6 +27,7 @@ const options: NextAuthOptions = {
           }
         );
         const user = await res.json();
+       
         if (res.ok && user) {
           
           return user;
