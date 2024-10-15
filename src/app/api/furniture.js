@@ -74,14 +74,12 @@ router.post('/check-or-add-user', async (req, res) => {
 
 router.post('/upload', async (req, res) => {
   try {
-    // Destructure the incoming request body
+
     const { price, description, condition, pics, user_id, colors } = req.body;
 
-    // Ensure pics are processed correctly
     const bufferPics = pics ? pics.map(pic => Buffer.from(pic, 'base64')) : [];
 
-    // Convert colors array to JSON string for PostgreSQL
-    const colorsArray = colors ? JSON.stringify(colors) : null; // Use null if colors is not provided
+    const colorsArray = colors ? JSON.stringify(colors) : null; 
 
     // Insert the new furniture listing into the database
     const result = await pool.query(
@@ -93,11 +91,10 @@ router.post('/upload', async (req, res) => {
         description,
         condition,
         bufferPics,
-        colorsArray // Pass as JSON string
+        colorsArray 
       ]
     );
 
-    // Respond with the created listing
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error saving furniture listing:', error);
