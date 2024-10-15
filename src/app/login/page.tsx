@@ -3,7 +3,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Typography, Container, Box, Tabs, Tab } from '@mui/material';
+import { Button, TextField, Typography, Container, Box, Tabs, Tab, Link } from '@mui/material';
 import { useRouter } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react';
 
@@ -113,6 +113,13 @@ const LoginPage = () => {
             error={formik.touched.password && Boolean(formik.errors.password)}
             helperText={formik.touched.password && formik.errors.password}
           />
+          {value === 0 && (
+            <Typography align="right" sx={{ color: 'blue', mt: 1 }}>
+              <Link href="/resetPassword" underline="hover">
+                Reset password
+              </Link>
+            </Typography>
+          )}
           {value === 1 && (
             <TextField
               margin="normal"

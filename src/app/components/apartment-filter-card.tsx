@@ -113,7 +113,7 @@ export default function ApartmentFilter({ priceRange, setPriceRange, distRange, 
               getAriaValueText={valuetext}
               valueLabelDisplay="auto"
               min={0}
-              max={2000}
+              max={5000}
               style={{ margin: '15px', width: '90%' }} 
             />
           </Menu>

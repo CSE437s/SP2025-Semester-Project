@@ -4,7 +4,7 @@ const pool = require('../../../db');
 
 router.post('/check-or-add-user', async (req, res) => {
     const { user_id } = req.body;
-  
+  console.log(user_id);
     try {
       // Check if the user exists in the business_user table
       const userCheck = await pool.query('SELECT * FROM public."business_user" WHERE user_id = $1', [user_id]);
