@@ -4,6 +4,8 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Button, TextField, Typography, Container, Box } from '@mui/material';
+import { useRouter } from 'next/navigation';
+
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Email is required'),
@@ -11,6 +13,8 @@ const validationSchema = Yup.object({
 });
 
 const ResetPasswordPage = () => {
+    const router = useRouter();
+
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -29,6 +33,7 @@ const ResetPasswordPage = () => {
       if (res.ok) {
         alert("Password has been reset successfully");
         formik.resetForm();
+        router.push('/login')
       } else {
         const error = await res.json();
         alert(error.error);
