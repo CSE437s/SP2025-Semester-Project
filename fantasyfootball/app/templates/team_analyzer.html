@@ -5,6 +5,7 @@
 {% block content %}
 <div class="container">
     <h1>Team Analyzer</h1>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary">Return to Home</a>
     <div class="table-responsive">
         <table>
             <thead>
@@ -19,8 +20,8 @@
                     <th>Week 5 Points</th>
                     <th>Week 6 Points</th>
                     <th>Total Points</th>
-                    <th>Standard Deviation</th>
-                    <th>Grade</th>
+                    <th>Consistency Grade</th>
+                    <th>Overall Grade</th>
                 </tr>
             </thead>
             <tbody>

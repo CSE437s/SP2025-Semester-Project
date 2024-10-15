@@ -58,12 +58,13 @@ def home():
         yahoo_consumer_secret=os.getenv("YAHOO_CLIENT_SECRET"),
         env_file_location=Path(""),
     )
-    curr_user = query.get_current_user()._extracted_data["guid"]
+    curr_user_team = query.get_current_user()._extracted_data["guid"]
     leagues = query.get_user_leagues_by_game_key(449)
     
     for league in leagues:
         if isinstance(league.name, bytes):
             league.name = league.name.decode('utf-8')
+
     if request.method == "POST":
         selected_league_id = request.form.get("league_id")
         query = YahooFantasySportsQuery(
@@ -74,24 +75,94 @@ def home():
             yahoo_consumer_secret=os.getenv("YAHOO_CLIENT_SECRET"),
             env_file_location=Path(""),
         )
+
+        player_team_data = []
+
         for team in query.get_league_teams():
             if team.is_owned_by_current_login == 1:
                 curr_user_team = [team.team_id]
 
-        team_info  = query.get_team_info(curr_user_team[0])._extracted_data
-        # from team info i want team name and team roster
+        team_info = query.get_team_info(curr_user_team[0])._extracted_data
         team_name = team_info["name"]
         team_roster = team_info["roster"]
 
-        return jsonify(team_roster)
-        # return render_template("home.html", leagues=leagues, user_team=user_team, league_teams=league_teams)
+        # Extract player names and positions
+        players = []
+        for player in team_roster.players:  # Access the 'players' list from the 'roster' object
+            player_name = player.name.full  # Use 'full' name field from the player object
+            player_position = player.primary_position  # Get the player's position
+            players.append({
+                "name": player_name,
+                "position": player_position
+            })
+            player_team_data.append({
+                "player_name": player_name,
+                "team_name": team_name
+            })
+        
+        df = pd.DataFrame(player_team_data)
+
+        if not os.path.exists("data"):
+            os.makedirs("data")
+
+        # Save the DataFrame to CSV
+        df.to_csv("data/player_team_data.csv", index=False)
+
+        update_ownership()
+
+        
+        # Pass team name and players to the template
+        return render_template("home.html", team_name=team_name, players=players, leagues=leagues)
+    
     return render_template("home.html", leagues=leagues)
+
+
+
+
 
 
 
     # Access the roster
    
     # return team_info
+
+def update_ownership():
+    # Load the CSV file into a DataFrame
+    df = pd.read_csv("data/player_team_data.csv")
+
+    try:
+        # Get connection from the pool
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        # Iterate over the DataFrame and update the database
+        for index, row in df.iterrows():
+            player_name = row['player_name']
+            owner = row['team_name']  # Assuming 'team_name' indicates ownership
+            
+            # Check if the player is in the database
+            cursor.execute('SELECT COUNT(*) FROM "seasonstats" WHERE "Player" = %s', (player_name,))
+            exists = cursor.fetchone()[0]
+
+            if exists > 0:
+                # Update the ownership status in the database
+                cursor.execute(
+                    'UPDATE "seasonstats" SET "fantasy_owner" = %s WHERE "Player" = %s',
+                    (owner, player_name)
+                )
+
+        # Commit the transaction
+        connection.commit()
+
+        # Close cursor and release connection
+        cursor.close()
+        release_connection(connection)
+
+        return jsonify({"message": "Ownership status updated successfully."}), 200
+
+    except Exception as error:
+        print("Error updating ownership status:", error)
+        return jsonify({"error": "Error updating ownership status."}), 500
 
 @main.route('/waiver-wire')
 def waiver_wire():
@@ -101,7 +172,8 @@ def waiver_wire():
         cursor = connection.cursor()
 
         # Query players for waiver wire (e.g., WR and RB positions)
-        cursor.execute('SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" WHERE "Pos" IN (\'WR\', \'RB\')')
+        cursor.execute('SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" WHERE "fantasy_owner" IS NULL')
+
         rows = cursor.fetchall()
 
         waiver_wire_players = [
@@ -161,15 +233,28 @@ def calculate_consistency(player):
     total_points = sum(weekly_points)
     
     # If total points are less than 40, return None for both total and std_dev
-    if total_points < 40:
-        return None, None
+    # if total_points < 40:
+        # return None, None
 
     # Calculate standard deviation for consistency
     mean = total_points / len(weekly_points)
     variance = np.var(weekly_points)
     std_dev = np.sqrt(variance)
 
-    return total_points, std_dev
+    grade = ""
+
+    if std_dev <= 4:
+        grade = "A"
+    elif std_dev <= 6:
+        grade = "B"
+    elif std_dev <=9:
+        grade = "C"
+    elif std_dev <=12:
+        grade = "D"
+    else:
+        grade = "F"
+
+    return total_points, grade
 
 @main.route('/team-analyzer')
 def team_analyzer():
@@ -178,7 +263,7 @@ def team_analyzer():
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute('SELECT "Player", "Pos", "Rankbypos", "WK1Pts", "WK2Pts", "WK3Pts", "WK4Pts", "WK5Pts", "WK6Pts" FROM "seasonstats"')
+        cursor.execute('SELECT "Player", "Pos", "Rankbypos", "WK1Pts", "WK2Pts", "WK3Pts", "WK4Pts", "WK5Pts", "WK6Pts" FROM "seasonstats" WHERE fantasy_owner = %s', ("Randy's Mind-Blowing Team",))
         all_players = cursor.fetchall()
 
         cursor.close()
@@ -228,14 +313,24 @@ def trade_builder():
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute('SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats"')
-    all_players = cursor.fetchall()
+    # Fetch your players
+    cursor.execute('SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" WHERE fantasy_owner = %s', ("Randy's Mind-Blowing Team",))
+    my_players = cursor.fetchall()
+
+    # Fetch opposing players
+    cursor.execute('SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" WHERE TRIM("fantasy_owner") != %s', ("Randy's Mind-Blowing Team",))
+    opposing_players = cursor.fetchall()
 
     cursor.close()
     release_connection(connection)
 
+    # Debugging print statement
+    print(f"My Players: {my_players}")
+    print(f"Opposing Players: {opposing_players}")
+
     # Step 2: Format the data into dictionaries for easy rendering in the template
-    players = [{'name': player[0], 'position': player[1], 'rank': player[2]} for player in all_players]
+    t1players = [{'name': player[0], 'position': player[1], 'rank': player[2]} for player in my_players]
+    t2players = [{'name': player[0], 'position': player[1], 'rank': player[2]} for player in opposing_players]
 
     trade_feedback = None
 
@@ -249,5 +344,4 @@ def trade_builder():
         trade_feedback = f'You proposed trading {your_player} for {target_player}.'
 
     # Step 4: Render the template with player data and feedback
-    return render_template('trade_builder.html', players=players, trade_feedback=trade_feedback)
-
+    return render_template('trade_builder.html', t1players=t1players, t2players=t2players, trade_feedback=trade_feedback)

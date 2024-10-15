@@ -15,20 +15,14 @@
         <button type="submit">Select League</button>
     </form>
 
-    {% if user_team %}
-        <h2>Your Team</h2>
-        <h3>{{ user_team.name }}</h3>
-        <p>Team ID: {{ user_team.team_id }}</p>
-        <!-- Add more team details here -->
-    {% endif %}
-
-    {% if league_teams %}
-        <h2>All Teams in the League</h2>
+    {% if team_name %}
+        <h2>All set!! Your Team: {{ team_name }}</h2>
+        <!-- <h3>Players:</h3>
         <ul>
-            {% for team in league_teams %}
-                <li>{{ team.name }} (Team ID: {{ team.team_id }})</li>
+            {% for player in players %}
+                <li>{{ player.name }} - Position: {{ player.position }}</li>
             {% endfor %}
-        </ul>
+        </ul> -->
     {% endif %}
 </div>
 {% endblock %}

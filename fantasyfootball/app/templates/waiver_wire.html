@@ -5,6 +5,7 @@
 {% block content %}
 <div class="container">
     <h1>Waiver Wire Suggestions</h1>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary">Return to Home</a>
     <section class="waiver-wire">
         <h2>Top Waiver Picks</h2>
         <ul>
@@ -12,7 +13,7 @@
                 <li>
                     <h3>{{ player.name }}</h3>
                     <p>Position: {{ player.position }}</p>
-                    <p>Projection: {{ player.projection }}</p>
+                    <p>Position Ranking: {{ player.projection }}</p>
                     <!-- More player details -->
                 </li>
             {% endfor %}
