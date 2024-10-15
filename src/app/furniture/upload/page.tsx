@@ -23,7 +23,6 @@ export default function ListingUpload() {
   const { data: session, status } = useSession();  
     const router = useRouter();
 
-
   const colorItems = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Black', 'Grey'];
 
   const validationSchema = Yup.object({
@@ -57,6 +56,23 @@ export default function ListingUpload() {
         pics: byteArrays,
         user_id: session?.user?.id,
       };
+
+      const checkUserResponse = await fetch('http://localhost:5001/api/furniture/check-or-add-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: session?.user?.id }),
+      });
+
+      if (!checkUserResponse.ok) {
+        console.error('Error checking or adding user:', checkUserResponse.statusText);
+        return;
+      }
+
+      const checkUserData = await checkUserResponse.json();
+      console.log('User Check/Add Response:', checkUserData);
+
       const response = await fetch('http://localhost:5001/api/furniture/upload', {
         method: 'POST',
         headers: {

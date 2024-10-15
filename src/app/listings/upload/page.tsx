@@ -75,20 +75,39 @@ export default function ListingUpload() {
         user_id: session?.user?.id,
       };
 
-      const response = await fetch('http://localhost:5001/api/apartment/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const checkUserResponse = await fetch('http://localhost:5001/api/furniture/check-or-add-user', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ user_id: session?.user?.id }),  
+  });
 
-      if (response.ok) {
-        console.log("Listing uploaded successfully.");
-        router.push('/listings');
-      } else {
-        console.error("Failed to upload listing:", response.statusText);
-      }
+  // If the user check fails, exit early
+  if (!checkUserResponse.ok) {
+    console.error('Error checking or adding user:', checkUserResponse.statusText);
+    return;
+  }
+
+  const checkUserData = await checkUserResponse.json();
+  console.log('User Check/Add Response for Apartment:', checkUserData);
+
+
+  const uploadResponse = await fetch('http://localhost:5001/api/apartment/upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  // If the upload is successful, redirect to the listings page
+  if (uploadResponse.ok) {
+    console.log("Apartment listing uploaded successfully.");
+    router.push('/listings');
+  } else {
+    console.error("Failed to upload apartment listing:", uploadResponse.statusText);
+  }
     },
   });
 
