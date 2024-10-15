@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yahoo Fantasy Football MVP</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="user-icon">
+                <a href="{{ url_for('main.home') }}">
+                    <img src="{{ url_for('static', filename='user-icon.png') }}" alt="User Icon">
+                </a>
+            </div>
+            <h1>Welcome to Yahoo Fantasy Football MVP!</h1>
+        </header>
+        <section class="leagues">
+            <h2>Your Leagues</h2>
+            <ul>
+                {% for league in leagues %}
+                    <li>
+                        <h3>{{ league.name }}</h3>
+                        <p>League ID: {{ league.league_id }}</p>
+                        <!-- Add more league info here -->
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
