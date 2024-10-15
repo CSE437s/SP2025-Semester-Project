@@ -12,8 +12,8 @@ const options: NextAuthOptions = {
       name: "credentials",
       async authorize(credentials, req) {
         const userCredentials = {
-          email: credentials.email,
-          password: credentials.password,
+          email: credentials?.email,
+          password: credentials?.password,
         };
         
         const res = await fetch(

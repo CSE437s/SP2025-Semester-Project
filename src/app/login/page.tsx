@@ -27,7 +27,6 @@ const LoginPage = () => {
     onSubmit: async (values) => {
       if (value === 0) { // Sign In
         const res = await signIn("credentials", {
-        
           email: values.email,
           password: values.password,
           callbackUrl: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/furniture`, // Redirect to furniture page on success
@@ -57,13 +56,24 @@ const LoginPage = () => {
         });
 
         if (res.ok) {
-          // Handle successful registration, redirect to furniture page
-          router.push('/furniture');
+          const signInRes = await signIn("credentials", {
+            email: values.email,
+            password: values.password,
+            redirect: false, 
+          });
+        
+          if (signInRes?.ok) {
+            router.push('/furniture');
+          } else {
+            alert('Error signing up, please try again')
+            console.error("Auto sign-in failed after sign-up");
+          }
         } else {
+          alert('Error signing up, please try again')
           console.log("Registration failed");
         }
       }
-      formik.resetForm(); // Reset the form after submission
+      formik.resetForm(); 
     },
   });
 

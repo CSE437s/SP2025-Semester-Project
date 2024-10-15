@@ -29,8 +29,6 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
 
   const filteredItems = navItems.filter(item => {
     let isSignedIn = true;
-
-    
     if (session && item.text == 'Login'){
       isSignedIn = false;
     }else if (!session && item.text == 'Sign Out' ){
