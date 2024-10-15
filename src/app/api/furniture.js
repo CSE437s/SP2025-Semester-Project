@@ -26,29 +26,37 @@ router.get('/:id', async (req, res) => {
       `SELECT fl.*, bu.rating 
        FROM public."furniture_listing" fl 
        JOIN public."business_user" bu ON bu.user_id = fl."user_id" 
-       WHERE fl.id = ${id}`
-    );    if (result.rows.length === 0) {
+       WHERE fl.id = $1`, [id] 
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Furniture item not found' });
     }
-    res.json(result.rows[0]);
+
+    const furniture = {
+      ...result.rows[0],
+      pics: result.rows[0].pics.map(pic => `data:image/jpeg;base64,${Buffer.from(pic).toString('base64')}`),
+      
+    };
+
+    res.json(furniture); 
   } catch (err) {
     console.error(`Error fetching furniture item:`, err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
+
 router.post('/check-or-add-user', async (req, res) => {
   const { user_id } = req.body;
 
   try {
-    // Check if the user exists in the business_user table
     const userCheck = await pool.query('SELECT * FROM public."business_user" WHERE user_id = $1', [user_id]);
 
     if (userCheck.rows.length === 0) {
-      // If the user doesn't exist, insert them into the business_user table
       const insertUser = await pool.query(
         'INSERT INTO public."business_user" (user_id, rating) VALUES ($1, $2) RETURNING *',
-        [user_id, 5]  // Default rating of 5
+        [user_id, 5] 
       );
 
       if (insertUser.rows.length === 0) {
