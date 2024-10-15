@@ -5,17 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yahoo Fantasy Football MVP</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="user-icon">
-                <a href="{{ url_for('main.home') }}">
-                    <img src="{{ url_for('static', filename='user-icon.png') }}" alt="User Icon">
-                </a>
+    <div class="backdrop"></div>
+
+    <header>
+        <div class="app-bar">
+            <h1 class="title">Fantasy Football Analytics</h1>
+            <div class="toolbar">
+                <button class="icon-button" onclick="toggleSound()">
+                    <span class="material-icons">{{ 'volume_up' if isMute else 'volume_off' }}</span>
+                </button>
+                <a href="{{ url_for('main.waiver_wire') }}" class="button primary">Waiver Wire Suggestions</a>
+                <a href="{{ url_for('main.team_analyzer') }}" class="button secondary">Team Analyzer</a>
+                <a href="{{ url_for('main.trade_builder') }}" class="button success">Trade Builder</a>
             </div>
-            <h1>Welcome to Yahoo Fantasy Football MVP!</h1>
-        </header>
+        </div>
+    </header>
+
+    <main>
+        <section class="welcome-section">
+            <h2>Welcome to Yahoo Fantasy Football MVP!</h2>
+        </section>
+
         <section class="leagues">
             <h2>Your Leagues</h2>
             <ul>
@@ -23,11 +36,11 @@
                     <li>
                         <h3>{{ league.full_name }}</h3>
                         <p>Player Key: {{ league.player_key }}</p>
-                        <!-- Add more league info here -->
                     </li>
                 {% endfor %}
             </ul>
         </section>
+
         <section class="data-frame">
             <h2>Player Data</h2>
             <table>
@@ -42,12 +55,15 @@
                     <tr>
                         <td>{{ league.full_name }}</td>
                         <td>{{ league.player_key }}</td>
-                        <td>{{ league.owner }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </section>
-    </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Yahoo Fantasy Football MVP</p>
+    </footer>
 </body>
 </html>

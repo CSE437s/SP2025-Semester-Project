@@ -1,10 +1,13 @@
 /* styles.css */
+
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
     margin: 0;
     padding: 0;
+    background-color: #f4f4f4; /* Light gray background */
+    color: #333; /* Dark text color */
+    line-height: 1.6; /* Improved line height for readability */
 }
 
 .container {
@@ -14,31 +17,45 @@ body {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    text-align: center; /* Center text in container */
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.user-icon img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    background-color: #3f51b5; /* Header color */
+    color: white;
+    padding: 20px;
+    text-align: center; /* Center header text */
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin: 0 0 20px;
+    font-size: 2.5em; /* Larger heading */
 }
 
-.leagues {
-    text-align: left;
+h2 {
+    margin: 20px 0;
+    font-size: 1.8em; /* Subheading size */
+    color: #3f51b5; /* Header color */
 }
 
-.leagues h2 {
-    margin-bottom: 20px;
+h3 {
+    margin: 10px 0;
+    font-size: 1.5em; /* Smaller subheading size */
+}
+
+footer {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 0.9em; /* Smaller font size for footer */
+}
+
+/* List Styles */
+.leagues, .waiver-wire {
+    margin: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .leagues ul {
@@ -47,27 +64,117 @@ h1 {
 }
 
 .leagues li {
-    background: #f9f9f9;
+    background: #f9f9f9; /* Light background for list items */
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.leagues h3 {
-    margin: 0 0 5px 0;
-}
-
-.login-button {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #0073e6;
-    color: white;
+/* Button Styles */
+.button {
+    padding: 10px 15px;
     text-decoration: none;
+    color: white;
     border-radius: 5px;
+    cursor: pointer;
     transition: background-color 0.3s;
+    font-size: 1em; /* Button text size */
 }
 
-.login-button:hover {
-    background-color: #005bb5;
+.button.primary {
+    background-color: #1976d2; /* Primary button color */
+}
+
+.button.secondary {
+    background-color: #9c27b0; /* Secondary button color */
+}
+
+.button.success {
+    background-color: #4caf50; /* Success button color */
+}
+
+.button:hover {
+    background-color: #0056b3; /* Darker shade on hover for primary button */
+}
+
+/* Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    margin: 20px auto; /* Center form */
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label, select {
+    font-size: 16px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 5px;
+    margin-bottom: 20px; /* Space below select */
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    background-color: #3f51b5; /* Header background color */
+    color: white; /* Header text color */
+    padding: 10px; /* Padding for table headers */
+    border-bottom: 2px solid #ddd; /* Bottom border for headers */
+}
+
+tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Backdrop for fixed background */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('path_to_backdrop_image.jpg'); /* Replace with actual image */
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+}
+
+/* Feedback Text */
+p {
+    text-align: center; /* Center feedback text */
+    font-weight: bold; /* Bold feedback text */
+    color: #333; /* Dark text color */
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2em; /* Smaller heading on mobile */
+    }
+
+    h2 {
+        font-size: 1.5em; /* Smaller subheading on mobile */
+    }
+
+    form {
+        width: 90%; /* Wider form on small screens */
+    }
+
+    .button {
+        font-size: 0.9em; /* Smaller buttons on mobile */
+    }
 }
