@@ -46,6 +46,7 @@ footer {
     text-align: center;
     margin: 20px 0;
     font-size: 0.9em; /* Smaller font size for footer */
+    display: none;
 }
 
 /* List Styles */
@@ -264,6 +265,7 @@ footer {
     position: fixed;
     width: 100%;
     bottom: 0;
+    display: none;
 }
 
 
@@ -340,6 +342,7 @@ footer {
     position: fixed;
     width: 100%;
     bottom: 0;
+    display: none;
 }
 .table-responsive {
     overflow-x: auto;

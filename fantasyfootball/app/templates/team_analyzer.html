@@ -5,7 +5,18 @@
 {% block content %}
 <div class="container">
     <h1>Team Analyzer</h1>
-    <div class="table-responsive">
+    <form method="POST">
+        <label for="team">Select a team:</label>
+        <select name="team" id="team">
+            {% for team in teams %}
+                <option value="{{ team }}" {% if team == selected_team %}selected{% endif %}>{{ team }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Analyze Team</button>
+    </form>
+
+    {% if selected_team %}
+        <h2>Analysis for {{ selected_team }}</h2>
         <table>
             <thead>
                 <tr>
@@ -42,6 +53,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}
