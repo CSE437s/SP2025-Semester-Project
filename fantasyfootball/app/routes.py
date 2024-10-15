@@ -14,6 +14,26 @@ import numpy as np
 api = Blueprint("api", __name__)
 main = Blueprint("main", __name__)
 
+def extract_serializable_data(obj):
+    # If the object has '_extracted_data', use it
+    if hasattr(obj, '_extracted_data'):
+        obj = obj._extracted_data
+
+    # If it's a dictionary, recursively process its values
+    if isinstance(obj, dict):
+        return {key: extract_serializable_data(value) for key, value in obj.items()}
+
+    # If it's a list or tuple, recursively process its elements
+    elif isinstance(obj, (list, tuple)):
+        return [extract_serializable_data(item) for item in obj]
+
+    # If it's a serializable primitive (str, int, float, bool, None), return it directly
+    elif isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+
+    # If it's another object type, check for '_extracted_data' or convert to string as fallback
+    else:
+        return str(obj)  # Convert to string as a last resort
 
 @api.route("/auth", methods=["GET"])
 def auth():
@@ -79,11 +99,13 @@ def home():
                 curr_user_team = [team.team_id]
 
         team_info  = query.get_team_info(curr_user_team[0])._extracted_data
+
+        serializable_team_info = extract_serializable_data(team_info)
         # from team info i want team name and team roster
         team_name = team_info["name"]
         team_roster = team_info["roster"]
 
-        return jsonify(team_roster)
+        return jsonify(serializable_team_info)
         # return render_template("home.html", leagues=leagues, user_team=user_team, league_teams=league_teams)
     return render_template("home.html", leagues=leagues)
 
