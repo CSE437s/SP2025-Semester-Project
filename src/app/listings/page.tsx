@@ -9,6 +9,8 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Link from 'next/link'; 
 import { getCoordinatesOfAddress, haversineDistance } from './utils'; 
+import { useSession } from 'next-auth/react';  
+import { useRouter } from 'next/navigation';
 
 interface ApartmentItems {
   id: number;
@@ -40,6 +42,19 @@ const Listings = () => {
   const [filteredLocations, setFilteredLocations] = useState<Location[]>([]); 
   const [bedNum, setBedNum] = useState<string>("Any");
   const [bathNum, setBathNum] = useState<string>("Any");
+  const { data: session, status } = useSession();  // Get session and status
+  const router = useRouter();
+
+  const handleAddListing = () => {
+    if (status === 'unauthenticated') {
+      const res = confirm("You must be logged in to add a apartment listing. Do you want to log in or sign up?");
+      if(res){
+        router.push('/login'); 
+      }
+    } else {
+      router.push('/listings/upload');
+    }
+  };
 
   useEffect(() => {
     const fetchApartmentItems = async () => {
@@ -118,7 +133,6 @@ filteredItems.filter(item => {
 });
 
 
-console.log(hi);
   return (
 
 
@@ -127,9 +141,7 @@ console.log(hi);
     <div style={{ display: 'flex', padding: '30px', flexDirection: 'column' }}>
 
 <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px' }}>
-      <Link href="/listings/upload" passHref>
-        <Button variant="contained">Add Listing</Button>
-      </Link>
+<Button variant="contained" onClick={handleAddListing}>Add Listing</Button> 
     </div>
 
       {/* Map Section */}

@@ -19,11 +19,6 @@ export default function ListingUpload() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (!session || !session.user?.id) {
-    alert("You must be logged in to upload an apartment listing.");
-    router.push('/listings');
-  }
-
   // Validation schema for Formik using Yup
   const validationSchema = Yup.object({
     title: Yup.string()

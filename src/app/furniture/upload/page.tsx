@@ -20,13 +20,9 @@ import * as Yup from 'yup';
 export default function ListingUpload() {
   const [files, setFiles] = React.useState<File[]>([]);
   const [fileNames, setFileNames] = React.useState<string[]>([]);
-  const { data: session } = useSession();
-  const router = useRouter();
+  const { data: session, status } = useSession();  
+    const router = useRouter();
 
-  if (!session || !session.user?.id) {
-    alert("You must be logged in to upload a furniture listing.");
-    router.push('/furniture');
-  }
 
   const colorItems = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Black', 'Grey'];
 

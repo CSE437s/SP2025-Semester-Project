@@ -4,16 +4,14 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { AppBar, Box, CssBaseline, Divider, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar, Typography, Button } from '@mui/material';
-
-
+import { handleSignOut } from '../utils/auth/signOutHandler'; 
 
 const drawerWidth = 240;
 const navItems = [
   { text: 'Furniture', href: '/furniture' }, 
   { text: 'Listings', href: '/listings' },   
- // { text: 'Messages', href: '/messages' },   
   { text: 'Login', href: '/login' },   
-  {text: 'Sign Out', href: '/signout'}      
+  { text: 'Sign Out', href: '#' }
 ];
 
 export default function DrawerAppBar(props: { window?: () => Window }) {
@@ -26,18 +24,15 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
     setMobileOpen((prevState) => !prevState);
   };
 
-
   const filteredItems = navItems.filter(item => {
     let isSignedIn = true;
-    if (session && item.text == 'Login'){
+    if (session && item.text === 'Login'){
       isSignedIn = false;
-    }else if (!session && item.text == 'Sign Out' ){
+    } else if (!session && item.text === 'Sign Out'){
       isSignedIn = false;
     }
     return isSignedIn;
   });
-
-
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
@@ -49,7 +44,7 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
         {navItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <Link href={item.href} passHref>
-              <ListItemButton sx={{ textAlign: 'center' }}>
+              <ListItemButton sx={{ textAlign: 'center' }} onClick={item.text === 'Sign Out' ? handleSignOut : undefined}>
                 <ListItemText primary={item.text} />
               </ListItemButton>
             </Link>
@@ -72,9 +67,7 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-      
-          </IconButton>
+          />
           <Typography
             variant="h6"
             component="div"
@@ -84,10 +77,12 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {filteredItems.map((item) => (
-              <Button key={item.text} sx={{ color: '#fff' }}>
-                <Link href={item.href} passHref>
-                  {item.text}
-                </Link>
+              <Button key={item.text} sx={{ color: '#fff' }} onClick={item.text === 'Sign Out' ? handleSignOut : undefined}>
+                {item.text === 'Sign Out' ? item.text : (
+                  <Link href={item.href} passHref>
+                    {item.text}
+                  </Link>
+                )}
               </Button>
             ))}
           </Box>

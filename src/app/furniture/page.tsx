@@ -6,6 +6,8 @@ import FurnitureCard from '../components/furniture-card';
 import Filter from '../components/furniture-filter-card';
 import Button from '@mui/material/Button';
 import Link from 'next/link'; 
+import { useSession } from 'next-auth/react';  
+import { useRouter } from 'next/navigation';
 
 interface ColorData {
   colors: string[];
@@ -27,6 +29,20 @@ const FurniturePage = () => {
   const [priceRange, setPriceRange] = useState<number[]>([0, 500]);
   const [ratingValue, setRatingValue] = useState<number>(0);
   const [colorsValue, setColors] = useState<string[]>([]);
+
+  const { data: session, status } = useSession(); 
+  const router = useRouter();
+
+  const handleAddFurniture = () => {
+    if (status === 'unauthenticated') {
+      const res = confirm("You must be logged in to add a furniture listing. Do you want to log in or sign up?");
+      if(res){
+        router.push('/login'); 
+      }
+    } else {
+      router.push('/furniture/upload');  // Allow navigation to upload page
+    }
+  };
 
   useEffect(() => {
     const fetchFurnitureItems = async () => {
@@ -69,11 +85,9 @@ const FurniturePage = () => {
   return (
     <div style={{ display: 'flex', padding: '30px' }}>
 
-<div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px' }}>
-      <Link href="/furniture/upload" passHref>
-        <Button variant="contained">Add Furniture</Button>
-      </Link>
-    </div>
+<div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px', height: '100px' }}>
+        <Button variant="contained" onClick={handleAddFurniture}>Add Furniture</Button> 
+      </div>
 
       <div style={{ flexGrow: 1 }}>
         <Grid container spacing={4}>
