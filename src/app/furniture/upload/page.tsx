@@ -10,55 +10,82 @@ import Button from '@mui/material/Button';
 import { useSession } from 'next-auth/react';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
-export default async function ListingUpload() {
+export default function ListingUpload() {
   const [files, setFiles] = React.useState<File[]>([]);
+  const [fileNames, setFileNames] = React.useState<string[]>([]);
   const { data: session } = useSession();
   const router = useRouter();
 
-
   if (!session || !session.user?.id) {
     alert("You must be logged in to upload a furniture listing.");
-     router.push('/furniture');
+    router.push('/furniture');
   }
 
+  const colorItems = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Black', 'Grey'];
 
-  const [formData, setFormData] = React.useState({
-    price: 0,
-    description: '',
-    condition: '',
-    colors: [],
+  const validationSchema = Yup.object({
+    description: Yup.string()
+      .min(5, 'Description must be at least 5 characters')
+      .required('Description is required'),
+    price: Yup.number()
+      .min(0, 'Price must be at least 0')
+      .max(500, 'Price cannot exceed $500')
+      .required('Price is required'),
+    condition: Yup.string()
+      .min(3, 'Condition must be at least 3 characters')
+      .required('Condition is required'),
+    colors: Yup.array()
+      .min(1, 'At least one color must be selected')
+      .required('Color is required'),
   });
 
-  // State for managing selected colors
-  const [colorsValue, setColorsValue] = React.useState<string[]>([]);
+  const formik = useFormik({
+    initialValues: {
+      price: '',
+      description: '',
+      condition: '',
+      colors: [],
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      const byteArrays = await convertFilesToByteArray();
+      const payload = {
+        ...values,
+        pics: byteArrays,
+        user_id: session?.user?.id,
+      };
+      const response = await fetch('http://localhost:5001/api/furniture/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-  // Handle file input change
+      if (response.ok) {
+        console.log("Listing uploaded successfully.");
+        router.push('/furniture');
+      } else {
+        console.error("Failed to upload listing:", response.statusText);
+      }
+    },
+  });
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
       setFiles(selectedFiles);
+      setFileNames(selectedFiles.map((file) => file.name));
     }
   };
 
-  // Handle form input change
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  // Handle color selection
-  const handleColorChange = (event: SelectChangeEvent<string[]>) => {
-    const { value } = event.target;
-    setColorsValue(value);
-    setFormData({ ...formData, colors: value });
-  };
-
-  // Function to convert files to byte arrays
   const convertFilesToByteArray = async () => {
     const byteArrays: string[] = await Promise.all(
       files.map(file => {
@@ -76,52 +103,24 @@ export default async function ListingUpload() {
     return byteArrays;
   };
 
-  // Handle form submission
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const byteArrays = await convertFilesToByteArray();
-
-    const payload = {
-      ...formData,
-      pics: byteArrays, 
-      user_id: session?.user?.id,
-    };
-    const response = await fetch('http://localhost:5001/api/furniture/upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    // Handle the response here
-    if (response.ok) {
-      console.log("Listing uploaded successfully.");
-      router.push('/furniture');
-    } else {
-      console.error("Failed to upload listing:", response.statusText);
-    }
-  };
-
-  const colorItems = [
-    'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Black', 'Grey',
-  ];
-
   return (
     <Box
       component="form"
       sx={{ '& > :not(style)': { m: 2, width: '25ch' } }}
       noValidate
       autoComplete="off"
-      onSubmit={handleSubmit}
+      onSubmit={formik.handleSubmit}
     >
-      <TextField 
-        id="outlined-description" 
-        label="Description" 
-        variant="outlined" 
-        name="description" 
-        onChange={handleInputChange} 
+      <TextField
+        id="outlined-description"
+        label="Description"
+        variant="outlined"
+        name="description"
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.description}
+        error={formik.touched.description && Boolean(formik.errors.description)}
+        helperText={formik.touched.description && formik.errors.description}
       />
       <FormControl fullWidth sx={{ m: 1 }}>
         <InputLabel htmlFor="outlined-adornment-price">Listing Price</InputLabel>
@@ -131,8 +130,14 @@ export default async function ListingUpload() {
           label="Listing Price"
           name="price"
           type="number"
-          onChange={handleInputChange} 
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.price}
+          error={formik.touched.price && Boolean(formik.errors.price)}
         />
+        {formik.touched.price && formik.errors.price && (
+          <div style={{ color: 'red' }}>{formik.errors.price}</div>
+        )}
       </FormControl>
       <TextField
         id="outlined-condition"
@@ -140,7 +145,11 @@ export default async function ListingUpload() {
         multiline
         rows={4}
         name="condition"
-        onChange={handleInputChange} 
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.condition}
+        error={formik.touched.condition && Boolean(formik.errors.condition)}
+        helperText={formik.touched.condition && formik.errors.condition}
       />
 
       <FormControl fullWidth sx={{ m: 1 }}>
@@ -149,33 +158,46 @@ export default async function ListingUpload() {
           labelId="demo-multiple-checkbox-label"
           id="demo-multiple-checkbox"
           multiple
-          value={colorsValue}
-          onChange={handleColorChange}
+          value={formik.values.colors}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          name="colors"
           input={<OutlinedInput label="Color" />}
           renderValue={(selected) => selected.join(', ')}
+          error={formik.touched.colors && Boolean(formik.errors.colors)}
         >
           {colorItems.map((name) => (
             <MenuItem key={name} value={name}>
-              <Checkbox checked={colorsValue.includes(name)} />
+              <Checkbox checked={formik.values.colors.includes(name)} />
               <ListItemText primary={name} />
             </MenuItem>
           ))}
         </Select>
+        {formik.touched.colors && formik.errors.colors && (
+          <div style={{ color: 'red' }}>{formik.errors.colors}</div>
+        )}
       </FormControl>
 
       <Button
         variant="contained"
         component="label"
       >
-        Upload File
+        {fileNames.length > 0 ? `${fileNames.join(', ')}` : 'Upload File'}
         <input
           type="file"
           hidden
-          onChange={handleFileChange} 
-          multiple 
+          onChange={handleFileChange}
+          multiple
         />
       </Button>
-      <Button type="submit" variant="contained">Submit Listing</Button>
+
+      <Button
+        type="submit"
+        variant="contained"
+        disabled={!formik.isValid || !formik.dirty}
+      >
+        Submit Listing
+      </Button>
     </Box>
   );
 }

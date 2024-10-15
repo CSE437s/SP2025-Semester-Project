@@ -36,7 +36,6 @@ const LoginPage = () => {
 
         // Check if sign in was successful
         if (res?.ok) {
-          console.log('User signed in:', session.user); 
           router.push('/furniture');
         } else {
             alert("Incorrect Sign in");

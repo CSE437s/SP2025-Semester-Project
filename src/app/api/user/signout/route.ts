@@ -1,4 +1,3 @@
-"use client";
 import * as React from 'react';
 import { signOut, useSession } from 'next-auth/react';
 
@@ -13,8 +12,6 @@ const signedOut = () => {
       
 
 return (
-
-    
 );
 }
 

@@ -8,12 +8,14 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
-import {  useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 export default function ListingUpload() {
-  const [files, setFiles] = React.useState<File[]>([]); // State to hold files
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [fileNames, setFileNames] = React.useState<string[]>([]);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -22,31 +24,86 @@ export default function ListingUpload() {
     router.push('/listings');
   }
 
-  const [formData, setFormData] = React.useState({
-   
-    title: '',
-    price: 0,
-    description: '',
-    location: '',
-    availability: '',
-    bedrooms: 0,
-    bathrooms: 0,
-    amenities: '',
-    policies: '',
+  // Validation schema for Formik using Yup
+  const validationSchema = Yup.object({
+    title: Yup.string()
+      .min(5, 'Title must be at least 5 characters')
+      .required('Title is required'),
+    price: Yup.number()
+      .min(0, 'Price must be at least 0')
+      .max(5000, 'Price cannot exceed $5000')
+      .required('Price is required'),
+    description: Yup.string()
+      .min(5, 'Description must be at least 5 characters')
+      .required('Description is required'),
+    location: Yup.string()
+      .min(5, 'Location must be at least 5 characters')
+      .required('Location is required'),
+    availability: Yup.string()
+      .min(5, 'Availability must be at least 5 characters')
+      .required('Availability is required'),
+    bedrooms: Yup.number()
+      .min(0, 'Bedrooms must be at least 0')
+      .max(20, 'Bedrooms cannot exceed 20')
+      .required('Bedrooms are required'),
+    bathrooms: Yup.number()
+      .min(0, 'Bathrooms must be at least 0')
+      .max(20, 'Bathrooms cannot exceed 20')
+      .required('Bathrooms are required'),
+    amenities: Yup.string()
+      .min(5, 'Amenities must be at least 5 characters')
+      .required('Amenities are required'),
+    policies: Yup.string()
+      .min(5, 'Policies must be at least 5 characters')
+      .required('Policies are required'),
   });
 
-  // Handle file input change
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      title: '',
+      price: 0,
+      description: '',
+      location: '',
+      availability: '',
+      bedrooms: 0,
+      bathrooms: 0,
+      amenities: '',
+      policies: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      const byteArrays = await convertFilesToByteArray();
+      const payload = {
+        ...values,
+        pics: byteArrays,
+        user_id: session?.user?.id,
+      };
+
+      const response = await fetch('http://localhost:5001/api/apartment/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        console.log("Listing uploaded successfully.");
+        router.push('/listings');
+      } else {
+        console.error("Failed to upload listing:", response.statusText);
+      }
+    },
+  });
+
+  // Handle file input change and update file names
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
       setFiles(selectedFiles);
+      setFileNames(selectedFiles.map((file) => file.name));
     }
-  };
-
-  // Handle form input change
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
   };
 
   // Function to convert files to byte arrays
@@ -56,7 +113,6 @@ export default function ListingUpload() {
         return new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => {
-            // Convert to Base64 string
             const byteString = reader.result as string;
             resolve(byteString.split(',')[1]); // Get the base64 part
           };
@@ -68,49 +124,24 @@ export default function ListingUpload() {
     return byteArrays;
   };
 
-  // Handle form submission
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-  
-
-    const byteArrays = await convertFilesToByteArray();
-
-    // Prepare the payload for your API
-    const payload = {
-      ...formData,
-      pics: byteArrays, 
-      user_id: session.user.id,
-    };
-
-    
-    const response = await fetch('http://localhost:5001/api/apartment/upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-       
-      },
-      body: JSON.stringify(payload),
-    });
-
-    // Handle the response here
-    console.log(response); // Check the payload before sending it to the server
-    router.push('/listings');
-  };
-
   return (
     <Box
       component="form"
       sx={{ '& > :not(style)': { m: 2, width: '25ch' } }}
       noValidate
       autoComplete="off"
-      onSubmit={handleSubmit} // Attach submit handler
+      onSubmit={formik.handleSubmit}
     >
-      <TextField 
-        id="outlined-title" 
-        label="Title" 
-        variant="outlined" 
-        name="title" 
-        onChange={handleInputChange} // Handle input change
+      <TextField
+        id="outlined-title"
+        label="Title"
+        variant="outlined"
+        name="title"
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.title}
+        error={formik.touched.title && Boolean(formik.errors.title)}
+        helperText={formik.touched.title && formik.errors.title}
       />
       <FormControl fullWidth sx={{ m: 1 }}>
         <InputLabel htmlFor="outlined-adornment-price">Listing Price</InputLabel>
@@ -119,9 +150,15 @@ export default function ListingUpload() {
           startAdornment={<InputAdornment position="start">$</InputAdornment>}
           label="Listing Price"
           name="price"
-          type="number" // Ensure it is a number
-          onChange={handleInputChange} // Handle input change
+          type="number"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.price}
+          error={formik.touched.price && Boolean(formik.errors.price)}
         />
+        {formik.touched.price && formik.errors.price && (
+          <div style={{ color: 'red' }}>{formik.errors.price}</div>
+        )}
       </FormControl>
       <TextField
         id="outlined-description"
@@ -129,26 +166,57 @@ export default function ListingUpload() {
         multiline
         rows={4}
         name="description"
-        onChange={handleInputChange} // Handle input change
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.description}
+        error={formik.touched.description && Boolean(formik.errors.description)}
+        helperText={formik.touched.description && formik.errors.description}
       />
-      <TextField id="outlined-location" label="Location" variant="outlined" name="location" onChange={handleInputChange} />
-      <OutlinedInput
+      <TextField
+        id="outlined-location"
+        label="Location"
+        variant="outlined"
+        name="location"
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.location}
+        error={formik.touched.location && Boolean(formik.errors.location)}
+        helperText={formik.touched.location && formik.errors.location}
+      />
+      <TextField
+        id="outlined-availability"
+        label="Availability"
+        variant="outlined"
+        name="availability"
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.availability}
+        error={formik.touched.availability && Boolean(formik.errors.availability)}
+        helperText={formik.touched.availability && formik.errors.availability}
+      />
+      <TextField
         id="outlined-bedrooms"
-        endAdornment={<InputAdornment position="end">Bedrooms</InputAdornment>}
-        aria-describedby="outlined-bedrooms-helper-text"
-        defaultValue={0}
+        label="Bedrooms"
+        type="number"
+        variant="outlined"
         name="bedrooms"
-        type="number" // Ensure it is a number
-        onChange={handleInputChange} // Handle input change
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.bedrooms}
+        error={formik.touched.bedrooms && Boolean(formik.errors.bedrooms)}
+        helperText={formik.touched.bedrooms && formik.errors.bedrooms}
       />
-      <OutlinedInput
+      <TextField
         id="outlined-bathrooms"
-        endAdornment={<InputAdornment position="end">Bathrooms</InputAdornment>}
-        aria-describedby="outlined-bathrooms-helper-text"
-        defaultValue={0}
+        label="Bathrooms"
+        type="number"
+        variant="outlined"
         name="bathrooms"
-        type="number" // Ensure it is a number
-        onChange={handleInputChange} // Handle input change
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.bathrooms}
+        error={formik.touched.bathrooms && Boolean(formik.errors.bathrooms)}
+        helperText={formik.touched.bathrooms && formik.errors.bathrooms}
       />
       <TextField
         id="outlined-amenities"
@@ -156,7 +224,11 @@ export default function ListingUpload() {
         multiline
         rows={4}
         name="amenities"
-        onChange={handleInputChange} // Handle input change
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.amenities}
+        error={formik.touched.amenities && Boolean(formik.errors.amenities)}
+        helperText={formik.touched.amenities && formik.errors.amenities}
       />
       <TextField
         id="outlined-policies"
@@ -164,29 +236,31 @@ export default function ListingUpload() {
         multiline
         rows={4}
         name="policies"
-        onChange={handleInputChange} // Handle input change
-      />
-      <TextField
-        id="outlined-policies"
-        label="availability"
-        multiline
-        rows={4}
-        name="availability"
-        onChange={handleInputChange} // Handle input change
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.policies}
+        error={formik.touched.policies && Boolean(formik.errors.policies)}
+        helperText={formik.touched.policies && formik.errors.policies}
       />
       <Button
         variant="contained"
         component="label"
       >
-        Upload File
+        {fileNames.length > 0 ? `${fileNames.join(', ')}` : 'Upload File'}
         <input
           type="file"
           hidden
-          onChange={handleFileChange} // Handle file change
-          multiple // Allow multiple files if needed
+          onChange={handleFileChange}
+          multiple
         />
       </Button>
-      <Button type="submit" variant="contained">Submit Listing</Button>
+      <Button
+        type="submit"
+        variant="contained"
+        disabled={!formik.isValid || !formik.dirty}
+      >
+        Submit Listing
+      </Button>
     </Box>
   );
 }
