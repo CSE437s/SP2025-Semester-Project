@@ -6,7 +6,7 @@ import { Card, CardContent, CardMedia, Typography, Box, Grid, Button } from '@mu
 
 interface ApartmentItem {
   id: number;
-  userId: number; 
+  userId: number;
   price: number;
   location: string;
   amenities: string;
@@ -55,86 +55,66 @@ const ApartmentDescriptionPage = () => {
 
   return (
     <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '20px auto' }}>
-      <Card 
-        sx={{ 
-          boxShadow: 6, 
-          borderRadius: 2, 
-          minHeight: '80vh', 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center'
-        }}
-      >
-        <CardMedia
-          component="img"
-          height="500"
-          image={apartmentItem.pics[0] || "https://via.placeholder.com/400x300"}
-          alt="Apartment Listing Image"
-          sx={{ objectFit: 'cover' }}
-        />
-        <CardContent>
-          <Typography variant="h4" component="div" gutterBottom>
-            {apartmentItem.description}
-          </Typography>
+      <Grid container spacing={2}>
+        {/* Image on the left */}
+        <Grid item xs={12} md={6}>
+          <CardMedia
+            component="img"
+            height="100%"
+            image={apartmentItem.pics[0] || "https://via.placeholder.com/400x300"}
+            alt="Apartment Listing Image"
+            sx={{ objectFit: 'cover', borderRadius: 2 }}
+          />
+        </Grid>
 
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Price:
+        {/* Info Card on the right */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '20px',
+            border: '1px solid rbg(54,119,204)' 
+          }}>            
+          <CardContent>
+              <Typography variant="h4" component="div" gutterBottom>
+                {apartmentItem.description}
               </Typography>
-              <Typography variant="body1">${apartmentItem.price}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Location:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.location}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Bedrooms:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.bedrooms}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Bathrooms:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.bathrooms}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Amenities:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.amenities}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Availability:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.availability}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Policies:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.policies}</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h6" color="text.secondary">
-                Rating:
-              </Typography>
-              <Typography variant="body1">{apartmentItem.rating}</Typography>
-            </Grid>
-          </Grid>
 
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-            <Button variant="contained" color="primary" onClick={() => router.back()}>
-              Back to Listings
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
+              <Typography variant="body1" color="text.secondary">
+                Price: ${apartmentItem.price}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Location: {apartmentItem.location}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Bedrooms: {apartmentItem.bedrooms}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Bathrooms: {apartmentItem.bathrooms}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Amenities: {apartmentItem.amenities}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Availability: {apartmentItem.availability}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Policies: {apartmentItem.policies}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Rating: {apartmentItem.rating}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <Button variant="contained" color="primary" onClick={() => router.back()}>
+          Back to Listings
+        </Button>
+      </Box>
     </Box>
   );
 };
