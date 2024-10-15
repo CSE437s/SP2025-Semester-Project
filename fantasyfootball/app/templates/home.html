@@ -1,69 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yahoo Fantasy Football MVP</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-</head>
-<body>
-    <div class="backdrop"></div>
+{% extends "base.html" %}
 
-    <header>
-        <div class="app-bar">
-            <h1 class="title">Fantasy Football Analytics</h1>
-            <div class="toolbar">
-                <button class="icon-button" onclick="toggleSound()">
-                    <span class="material-icons">{{ 'volume_up' if isMute else 'volume_off' }}</span>
-                </button>
-                <a href="{{ url_for('main.waiver_wire') }}" class="button primary">Waiver Wire Suggestions</a>
-                <a href="{{ url_for('main.team_analyzer') }}" class="button secondary">Team Analyzer</a>
-                <a href="{{ url_for('main.trade_builder') }}" class="button success">Trade Builder</a>
-            </div>
-        </div>
-    </header>
+{% block title %}Home - Yahoo Fantasy Football MVP{% endblock %}
 
-    <main>
-        <section class="welcome-section">
-            <h2>Welcome to Yahoo Fantasy Football MVP!</h2>
-        </section>
+{% block content %}
+<div class="container">
+    <h1>Select a League</h1>
+    <form method="POST">
+        <label for="league_id">Choose a league:</label>
+        <select name="league_id" id="league_id">
+            {% for league in leagues %}
+                <option value="{{ league.league_id }}">{{ league.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Select League</button>
+    </form>
 
-        <section class="leagues">
-            <h2>Your Leagues</h2>
-            <ul>
-                {% for league in leagues %}
-                    <li>
-                        <h3>{{ league.full_name }}</h3>
-                        <p>Player Key: {{ league.player_key }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-        </section>
+    {% if user_team %}
+        <h2>Your Team</h2>
+        <h3>{{ user_team.name }}</h3>
+        <p>Team ID: {{ user_team.team_id }}</p>
+        <!-- Add more team details here -->
+    {% endif %}
 
-        <section class="data-frame">
-            <h2>Player Data</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Full Name</th>
-                        <th>Player Key</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for league in leagues %}
-                    <tr>
-                        <td>{{ league.full_name }}</td>
-                        <td>{{ league.player_key }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 Yahoo Fantasy Football MVP</p>
-    </footer>
-</body>
-</html>
+    {% if league_teams %}
+        <h2>All Teams in the League</h2>
+        <ul>
+            {% for team in league_teams %}
+                <li>{{ team.name }} (Team ID: {{ team.team_id }})</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}

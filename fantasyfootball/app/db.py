@@ -1,12 +1,16 @@
 import psycopg2
 from psycopg2 import pool
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Define your connection pool globally
 try:
     postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
         1, 20,
         user="postgres",
-        password="h2810039",
+        password=os.getenv("POSTGRES_PASSWORD"),
         host="localhost",
         port="5432",
         database="fantasy_football_db"

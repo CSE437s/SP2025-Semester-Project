@@ -1,34 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waiver Wire Suggestions</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <header>
-        <h1>Waiver Wire Suggestions</h1>
-    </header>
+{% extends "base.html" %}
 
-    <main>
-        <section class="waiver-wire">
-            <h2>Top Waiver Picks</h2>
-            <ul>
-                {% for player in waiver_wire_players %}
-                    <li>
-                        <h3>{{ player.name }}</h3>
-                        <p>Position: {{ player.position }}</p>
-                        <p>Projection: {{ player.projection }}</p>
-                        <!-- More player details -->
-                    </li>
-                {% endfor %}
-            </ul>
-        </section>
-    </main>
+{% block title %}Waiver Wire - Yahoo Fantasy Football MVP{% endblock %}
 
-    <footer>
-        <a href="{{ url_for('main.home') }}">Back to Home</a>
-    </footer>
-</body>
-</html>
+{% block content %}
+<div class="container">
+    <h1>Waiver Wire Suggestions</h1>
+    <section class="waiver-wire">
+        <h2>Top Waiver Picks</h2>
+        <ul>
+            {% for player in waiver_wire_players %}
+                <li>
+                    <h3>{{ player.name }}</h3>
+                    <p>Position: {{ player.position }}</p>
+                    <p>Projection: {{ player.projection }}</p>
+                    <!-- More player details -->
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+{% endblock %}

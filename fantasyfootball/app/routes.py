@@ -48,9 +48,7 @@ def callback():
     return redirect(url_for("main.home"))
 
 
-
-# get user info and get the league info from the user
-@main.route("/home", methods=["GET"])
+@main.route("/home", methods=["GET","POST"])
 def home():
     query = YahooFantasySportsQuery(
         league_id="<YAHOO_LEAGUE_ID>",
@@ -60,71 +58,35 @@ def home():
         yahoo_consumer_secret=os.getenv("YAHOO_CLIENT_SECRET"),
         env_file_location=Path(""),
     )
-
-    # leagues = query.get_user_leagues_by_game_key(449)
-    # league_teamsss = [
-    #     {"league_id": league.league_id, "name": league.name.decode('utf-8')} for league in leagues
-    # ]
+    curr_user = query.get_current_user()._extracted_data["guid"]
+    leagues = query.get_user_leagues_by_game_key(449)
     
-    # new_query = YahooFantasySportsQuery(
-    #     league_id=leagues[0].league_id,
-    #     game_code="nfl",
-    #     game_id=449,
-    #     yahoo_access_token_json=os.getenv("YAHOO_ACCESS_TOKEN_JSON"),
-    #     env_file_location=Path(""),
-    # )
-    # league_info = new_query.get_league_info()
-    
-    
-    # team1_players = team1.players
-    # team1_roster = team1.roster
-    # team1_player1 = team1_players[0]
-    # team1_player1_name = team1_player1.name
-    import json
-    from typing import Any
+    for league in leagues:
+        if isinstance(league.name, bytes):
+            league.name = league.name.decode('utf-8')
+    if request.method == "POST":
+        selected_league_id = request.form.get("league_id")
+        query = YahooFantasySportsQuery(
+            league_id=selected_league_id,
+            game_code="nfl",
+            game_id=449,
+            yahoo_consumer_key=os.getenv("YAHOO_CLIENT_ID"),
+            yahoo_consumer_secret=os.getenv("YAHOO_CLIENT_SECRET"),
+            env_file_location=Path(""),
+        )
+        for team in query.get_league_teams():
+            if team.is_owned_by_current_login == 1:
+                curr_user_team = [team.team_id]
 
-    def convert_to_serializable(obj: Any) -> Any:
-        if isinstance(obj, list):
-            return [convert_to_serializable(item) for item in obj]
-        elif isinstance(obj, dict):
-            return {key: convert_to_serializable(value) for key, value in obj.items()}
-        elif hasattr(obj, "_extracted_data"):
-            return convert_to_serializable(obj._extracted_data)
-        elif hasattr(obj, "__dict__"):
-            return {key: convert_to_serializable(value) for key, value in obj.__dict__.items()}
-        else:
-            return obj
+        team_info  = query.get_team_info(curr_user_team[0])._extracted_data
+        # from team info i want team name and team roster
+        team_name = team_info["name"]
+        team_roster = team_info["roster"]
 
+        return jsonify(team_roster)
+        # return render_template("home.html", leagues=leagues, user_team=user_team, league_teams=league_teams)
+    return render_template("home.html", leagues=leagues)
 
-
-    # Assuming league_info is a list of mixed types
-    # serializable_league_info = [convert_to_serializable(item) for item in league_info]
-
-    # team1 = new_query.get_team_info(1)
-    
-    # output = convert_to_serializable(team1)
-
-    # player_owner = {}
-    
-    # team_info = new_query.get_league_players(player_count_limit=10000)
-
-    # player_data = convert_to_serializable(team_info)
-
-    player_dict = {}
-
-    # extracted_data = [{"full_name": player["name"]["full"], "player_key": player["player_key"], "owner": new_query.get_player_ownership(player["player_key"])} for player in player_data]
-
-    # df = pd.DataFrame(extracted_data)
-   
-    # leagues = df.to_dict(orient='records')
-
-    extracted_data = [{"full_name": "Brett Harmon","player_key": "1234"}]
-
-    df = pd.DataFrame(extracted_data)
-    leagues = df.to_dict(orient='records')
-    
-
-    return render_template('home.html', leagues=leagues)
 
 
     # Access the roster
