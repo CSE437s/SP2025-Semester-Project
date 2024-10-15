@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 
 // Endpoint to fetch a specific apartment by ID
 router.get('/:id', async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; 
 
   try {
     const result = await pool.query(
@@ -41,8 +41,14 @@ router.get('/:id', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Listing item not found' });
     }
+
+    const apartment = {
+      ...result.rows[0],
+      pics: result.rows[0].pics.map(pic => `data:image/jpeg;base64,${Buffer.from(pic).toString('base64')}`),
+      
+    };
     
-    res.json(result.rows[0]);
+    res.json(apartment);
   } catch (err) {
     console.error(`Error fetching listing item:`, err);
     res.status(500).json({ error: 'Internal Server Error' });

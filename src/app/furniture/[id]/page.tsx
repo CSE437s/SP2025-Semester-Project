@@ -35,7 +35,6 @@ const FurnitureDescriptionPage = () => {
         try {
           const response = await fetch(`http://localhost:5001/api/furniture/${id}`);
           const data = await response.json();
-          console.log("DATA", data);
           if (response.ok) {
             setFurnitureItem(data);
           } else {
