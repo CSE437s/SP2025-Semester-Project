@@ -3,6 +3,8 @@ import os
 from yfpy.query import YahooFantasySportsQuery
 from pathlib import Path
 from flask import render_template
+import json
+import pandas as pd
 
 # Define a Blueprint for the API routes
 api = Blueprint("api", __name__)
@@ -87,10 +89,33 @@ def home():
             return {key: convert_to_serializable(value) for key, value in obj.__dict__.items()}
         else:
             return obj
+
+
+
     # Assuming league_info is a list of mixed types
-    serializable_league_info = [convert_to_serializable(item) for item in league_info]
+    # serializable_league_info = [convert_to_serializable(item) for item in league_info]
 
-    team1 = new_query.get_team_info(1)
-
+    # team1 = new_query.get_team_info(1)
     
-    return convert_to_serializable(team1)
+    # output = convert_to_serializable(team1)
+
+    # player_owner = {}
+    
+    team_info = new_query.get_league_players(player_count_limit=10000)
+
+    player_data = convert_to_serializable(team_info)
+
+    player_dict = {}
+
+    extracted_data = [{"full_name": player["name"]["full"], "player_key": player["player_key"], "owner": new_query.get_player_ownership(player["player_key"])} for player in player_data]
+
+    df = pd.DataFrame(extracted_data)
+   
+    leagues = df.to_dict(orient='records')
+
+    return render_template('home.html', leagues=leagues)
+
+
+    # Access the roster
+   
+    # return team_info

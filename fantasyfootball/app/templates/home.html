@@ -21,12 +21,32 @@
             <ul>
                 {% for league in leagues %}
                     <li>
-                        <h3>{{ league.name }}</h3>
-                        <p>League ID: {{ league.league_id }}</p>
+                        <h3>{{ league.full_name }}</h3>
+                        <p>Player Key: {{ league.player_key }}</p>
                         <!-- Add more league info here -->
                     </li>
                 {% endfor %}
             </ul>
+        </section>
+        <section class="data-frame">
+            <h2>Player Data</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Player Key</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for league in leagues %}
+                    <tr>
+                        <td>{{ league.full_name }}</td>
+                        <td>{{ league.player_key }}</td>
+                        <td>{{ league.owner }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </section>
     </div>
 </body>

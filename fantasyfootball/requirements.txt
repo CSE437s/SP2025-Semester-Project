@@ -4,6 +4,7 @@ certifi==2024.8.30
 charset-normalizer==3.4.0
 click==8.1.7
 coverage==7.6.1
+exceptiongroup==1.2.2
 flake8==7.1.1
 Flask==3.0.3
 idna==3.10
@@ -15,8 +16,10 @@ MarkupSafe==3.0.1
 mccabe==0.7.0
 mdurl==0.1.2
 myql==1.2.7
+numpy==2.1.2
 oauthlib==3.2.2
 packaging==24.1
+pandas==2.2.3
 pbr==6.1.0
 pluggy==1.5.0
 pyaml==24.9.0
@@ -24,7 +27,9 @@ pycodestyle==2.12.1
 pyflakes==3.2.0
 Pygments==2.18.0
 pytest==8.3.3
+python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
+pytz==2024.2
 PyYAML==6.0.2
 rauth==0.7.3
 requests==2.32.3
@@ -35,6 +40,9 @@ ruamel.yaml.clib==0.2.8
 six==1.16.0
 stevedore==5.3.0
 stringcase==1.2.0
+tomli==2.0.2
+typing_extensions==4.12.2
+tzdata==2024.2
 urllib3==2.2.3
 Werkzeug==3.0.4
 yahoo-oauth==2.1.0
