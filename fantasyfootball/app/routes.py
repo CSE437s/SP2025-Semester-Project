@@ -197,7 +197,7 @@ def waiver_wire():
             {
                 "name": row[0],
                 "position": row[1],
-                "projection": f"{row[2]} points",
+                "projection": f"{row[2]}",
             }
             for row in rows
         ]
@@ -222,7 +222,7 @@ def analyze_player(player):
         if player["Rankbypos"] == 1:
             return "A+: best at Position!"
         elif 2 <= player["Rankbypos"] <= 5:
-            return "A:"
+            return "A"
         elif 6 <= player["Rankbypos"] <= 10:
             return "B"
         elif 11 <= player["Rankbypos"] <= 15:
@@ -270,11 +270,11 @@ def calculate_consistency(player):
 
     grade = ""
 
-    if std_dev <= 4:
+    if std_dev <= 6:
         grade = "A"
-    elif std_dev <= 6:
+    elif std_dev <= 8:
         grade = "B"
-    elif std_dev <= 9:
+    elif std_dev <= 10:
         grade = "C"
     elif std_dev <= 12:
         grade = "D"

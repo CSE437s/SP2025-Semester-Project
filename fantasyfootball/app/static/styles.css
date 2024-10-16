@@ -177,6 +177,10 @@ p {
     .button {
         font-size: 0.9em; /* Smaller buttons on mobile */
     }
+    .container{
+        max-width: 100%;
+        padding: 10px;
+    }
 }
 
 /* app/static/styles.css */
@@ -189,7 +193,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 50px auto;
     padding: 20px;
     background: white;
@@ -278,7 +282,7 @@ body {
     padding: 0;
 }
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 50px auto;
     padding: 20px;
     background: white;
