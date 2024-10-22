@@ -7,18 +7,72 @@
     <h1>Waiver Wire Suggestions</h1>
     <section class="waiver-wire">
         <h2>Top Waiver Picks</h2>
-        <ul style="list-style-type: none; padding: 0; text-align: center;">
-            {% for player in waiver_wire_players %}
-            <li style="display: inline-block; margin: 10px; text-align: left;">
-                <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
-                <h3>{{ player.name }}</h3>
-                <p>Position: {{ player.position }}</p>
-                <p>{{ player.position }} Ranking: {{ player.projection }}</p>
-                <!-- More player details -->
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
+
+        <!-- Filter by Position (radio buttons) -->
+        <div class="position-filter" style="margin-bottom: 20px;">
+            <label style="margin-right: 15px;">
+                <input type="radio" name="positionFilter" value="" checked> All
+            </label>
+            <label style="margin-right: 15px;">
+                <input type="radio" name="positionFilter" value="QB"> QB
+            </label>
+            <label style="margin-right: 15px;">
+                <input type="radio" name="positionFilter" value="RB"> RB
+            </label>
+            <label style="margin-right: 15px;">
+                <input type="radio" name="positionFilter" value="WR"> WR
+            </label>
+            <label style="margin-right: 15px;">
+                <input type="radio" name="positionFilter" value="TE"> TE
+            </label>
+            <!-- Add more positions as needed -->
+        </div>
+
+        <!-- Waiver Wire Table -->
+        <div class="table-responsive">
+            <table id="waiverTable" class="table table-striped table-bordered table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Position Ranking</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in waiver_wire_players %}
+                    <tr>
+                        <td>{{ player.name }}</td>
+                        <td class="player-position">{{ player.position }}</td>
+                        <td>{{ player.projection }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Simple JavaScript for Filtering -->
+<script>
+    $(document).ready(function() {
+        // Listen for radio button change
+        $('input[name="positionFilter"]').on('change', function() {
+            var selectedPosition = $(this).val();
+
+            // Show or hide rows based on the selected position
+            $('#waiverTable tbody tr').each(function() {
+                var playerPosition = $(this).find('.player-position').text();
+                
+                if (selectedPosition === "" || playerPosition === selectedPosition) {
+                    $(this).show();  // Show row if it matches the filter or 'All' is selected
+                } else {
+                    $(this).hide();  // Hide row if it doesn't match the selected position
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

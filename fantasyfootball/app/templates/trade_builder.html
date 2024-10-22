@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <h1>Trade Builder</h1>
-    <form method="POST">
+    <form method="POST" id="tradeForm">
         <label for="team1">Select your team:</label>
         <select name="team1" id="team1">
             {% for team in teams %}
@@ -25,30 +25,95 @@
 
     {% if team1_roster and team2_roster %}
         <h2>Team 1 Roster</h2>
-        <form method="POST">
+        <form method="POST" id="tradeForm">
             <input type="hidden" name="team1" value="{{ request.form.team1 }}">
             <input type="hidden" name="team2" value="{{ request.form.team2 }}">
-            <label for="your_player">Select a player to trade:</label>
-            <select name="your_player" id="your_player">
-                {% for player in team1_roster %}
-                    <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
-                {% endfor %}
-            </select>
+
+            <label for="your_players">Select one or more players to trade:</label>
+            <div id="your_players_container">
+                <select name="your_players" class="your_players">
+                    {% for player in team1_roster %}
+                        <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="button" id="addYourPlayerButton">Add Another Player</button>
 
             <h2>Team 2 Roster</h2>
-            <label for="target_player">Select a player to receive:</label>
-            <select name="target_player" id="target_player">
-                {% for player in team2_roster %}
-                    <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
-                {% endfor %}
-            </select>
+            <label for="target_players">Select one or more players to receive:</label>
+            <div id="target_players_container">
+                <select name="target_players" class="target_players">
+                    {% for player in team2_roster %}
+                        <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="button" id="addTargetPlayerButton">Add Another Player</button>
 
             <button type="submit">Propose Trade</button>
         </form>
-    {% endif %}
 
-    {% if trade_feedback %}
-        <p>{{ trade_feedback }}</p>
+        {% if trade_feedback %}
+            <h2>Proposed Trade</h2>
+            <p>Your Trade: {{ trade_feedback }}</p>
+        {% endif %}
     {% endif %}
 </div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Script to handle adding player selection dropdowns -->
+<script>
+    $(document).ready(function() {
+        // Function to add a new player selection dropdown for Team 1
+        $('#addYourPlayerButton').on('click', function() {
+            $('#your_players_container').append(`
+                <select name="your_players" class="your_players">
+                    {% for player in team1_roster %}
+                        <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
+                    {% endfor %}
+                </select>
+            `);
+        });
+
+        // Function to add a new player selection dropdown for Team 2
+        $('#addTargetPlayerButton').on('click', function() {
+            $('#target_players_container').append(`
+                <select name="target_players" class="target_players">
+                    {% for player in team2_roster %}
+                        <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
+                    {% endfor %}
+                </select>
+            `);
+        });
+    });
+
+    // Function to confirm the trade and alert the details
+    function confirmTrade() {
+        var yourPlayers = [];
+        var targetPlayers = [];
+
+        // Collect selected players from your players dropdown
+        $('select[name="your_players"]').each(function() {
+            yourPlayers.push($(this).val());
+        });
+
+        // Collect selected players from target players dropdown
+        $('select[name="target_players"]').each(function() {
+            targetPlayers.push($(this).val());
+        });
+
+        // Create the alert message
+        var message = "You proposed to trade:\n" + yourPlayers.join(', ') + "\nfor\n" + targetPlayers.join(', ') + ".";
+        
+        // Show the alert
+        alert(message);
+
+        // Allow form submission
+        return true;  
+    }
+</script>
 {% endblock %}
