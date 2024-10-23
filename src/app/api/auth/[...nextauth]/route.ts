@@ -57,8 +57,8 @@ const options: NextAuthOptions = {
     async jwt({ token, user }) {
       // Persist the user information in the token
       if (user) {
-        token.id = user.id; // Add the user id to the token
-        token.email = user.email; // Add the email as well if needed
+        token.id = user.id; 
+        token.email = user.email; 
       }
       return token;
     },
@@ -67,8 +67,8 @@ const options: NextAuthOptions = {
       console.log('token', token);
       if (token) {
         session.user = {
-          id: token.id, // Retrieve the id from token
-          email: token.email, // Retrieve the email from token
+          id: token.id,
+          email: token.email,
         };
       }
       return session;
