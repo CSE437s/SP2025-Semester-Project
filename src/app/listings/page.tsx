@@ -6,8 +6,6 @@ import { ApartmentCard } from '../components/apartment-card';
 import ApartmentFilter from '../components/apartment-filter-card'; 
 import Maps from '../components/map-card';
 import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Link from 'next/link'; 
 import { getCoordinatesOfAddress, haversineDistance } from './utils'; 
 import { useSession } from 'next-auth/react';  
 import { useRouter } from 'next/navigation';

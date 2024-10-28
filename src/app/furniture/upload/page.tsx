@@ -47,6 +47,7 @@ export default function ListingUpload() {
       description: '',
       condition: '',
       colors: [],
+      location: '',
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
@@ -163,7 +164,17 @@ export default function ListingUpload() {
         error={formik.touched.condition && Boolean(formik.errors.condition)}
         helperText={formik.touched.condition && formik.errors.condition}
       />
-
+          <TextField
+        id="outlined-location"
+        label="Pick up Location"
+        variant="outlined"
+        name="location"
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.location}
+        error={formik.touched.location && Boolean(formik.errors.location)}
+        helperText={formik.touched.location && formik.errors.location}
+      />
       <FormControl fullWidth sx={{ m: 1 }}>
         <InputLabel id="demo-multiple-checkbox-label">Color</InputLabel>
         <Select

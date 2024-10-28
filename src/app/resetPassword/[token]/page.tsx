@@ -11,7 +11,6 @@ const UpdatePassword = () => {
   const router = useRouter();
   const params = useParams<{ token: string }>();
   const token = params['token'];
-  console.log(token);
   
   if (!token) {
     return <Typography variant="h6" color="error">Invalid or missing token</Typography>;

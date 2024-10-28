@@ -75,7 +75,7 @@ router.post('/check-or-add-user', async (req, res) => {
 router.post('/upload', async (req, res) => {
   try {
 
-    const { price, description, condition, pics, user_id, colors } = req.body;
+    const { price, description, condition, pics, user_id, location, colors } = req.body;
 
     const bufferPics = pics ? pics.map(pic => Buffer.from(pic, 'base64')) : [];
 
@@ -83,15 +83,16 @@ router.post('/upload', async (req, res) => {
 
     // Insert the new furniture listing into the database
     const result = await pool.query(
-      `INSERT INTO furniture_listing (user_id, price, description, condition, pics, colors)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      `INSERT INTO furniture_listing (user_id, price, description, condition, pics, colors, location)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [
         user_id,
         price,
         description,
         condition,
         bufferPics,
-        colorsArray 
+        colorsArray,
+        location
       ]
     );
 

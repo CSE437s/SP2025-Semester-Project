@@ -3,7 +3,8 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardMedia, Typography, Box, Grid, Button } from '@mui/material';
-
+import { getCoordinatesOfAddress } from '../../utils'; 
+import Maps from '../../components/map-card';
 interface ApartmentItem {
   id: number;
   userId: number;
@@ -19,11 +20,18 @@ interface ApartmentItem {
   rating: number;
 }
 
+interface Location {
+  latitude: number;
+  longitude: number;
+  description: string;
+}
+
 const ApartmentDescriptionPage = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params['id'];
-
+  const [locations, setLocations] = useState<Location[]>([]);
+  const address = [''];
   const [apartmentItem, setApartmentItem] = useState<ApartmentItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +43,16 @@ const ApartmentDescriptionPage = () => {
           const response = await fetch(`http://localhost:5001/api/apartment/${id}`);
           const data = await response.json();
           if (response.ok) {
+            if (data.location) {
+              const coords = await getCoordinatesOfAddress(data.location);
+            if (coords) {
+              setLocations([{
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                description: data.description || "Furniture",
+              }]);
+            }
+          }
             setApartmentItem(data);
           } else {
             setError(`Error: ${response.status} - ${data.message}`);
@@ -52,6 +70,7 @@ const ApartmentDescriptionPage = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!apartmentItem) return <div>No apartment item found.</div>;
+  address.push(apartmentItem?.location);
 
   return (
     <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '20px auto' }}>
@@ -68,7 +87,7 @@ const ApartmentDescriptionPage = () => {
         </Grid>
 
         {/* Info Card on the right */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={5}>
           <Card sx={{
             height: '100%',
             display: 'flex',
@@ -106,6 +125,17 @@ const ApartmentDescriptionPage = () => {
               <Typography variant="body1" color="text.secondary">
                 Rating: {apartmentItem.rating}
               </Typography>
+              <Grid item xs={8}>
+            {locations.length > 0 ? (
+          <Box sx={{  height: '200px', marginTop: '10px' }}>
+            <Maps locations={locations} names={address} />
+          </Box>
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            Location Unknown
+          </Typography>
+        )}
+         </Grid>
             </CardContent>
           </Card>
         </Grid>

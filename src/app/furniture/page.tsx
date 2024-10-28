@@ -40,7 +40,7 @@ const FurniturePage = () => {
         router.push('/login'); 
       }
     } else {
-      router.push('/furniture/upload');  // Allow navigation to upload page
+      router.push('/furniture/upload'); 
     }
   };
 
@@ -68,10 +68,10 @@ const FurniturePage = () => {
     const isTagged = tags.length === 0 || tags.some(tag => item.description.toLowerCase().includes(tag.toLowerCase()));
     const isInRating = item.rating >= ratingValue;
     let isColorMatch = colorsValue.length === 0;
- 
-    if (item.colors) {
-      for (let i = 0; i < item.colors.length; i++) {
-        if (colorsValue.includes(item.colors[i])) {
+    const colors = item.colors as unknown as string[];
+    if (colors) {
+      for (let i = 0; i < colors.length; i++) {
+        if (colorsValue.includes(colors[i])) {
           isColorMatch = true; 
           break; 
         }
@@ -85,7 +85,7 @@ const FurniturePage = () => {
   return (
     <div style={{ display: 'flex', padding: '30px' }}>
 
-<div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px', height: '100px' }}>
+    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px', height: '100px' }}>
         <Button variant="contained" onClick={handleAddFurniture}>Add Furniture</Button> 
       </div>
 
