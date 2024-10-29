@@ -1,0 +1,13 @@
+# ignore .env
+.env
+.dockerignore
+Dockerfile
+# venv folder and all content
+venv/
+
+../.DS_Store
+cert.pem
+key.pem
+
+#ignore data folder and all contents
+data/
