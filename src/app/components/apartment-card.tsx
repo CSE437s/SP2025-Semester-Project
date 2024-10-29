@@ -16,8 +16,13 @@ interface ApartmentCardProps {
 export const ApartmentCard = ({ title, address, price, imageUrl, id }: ApartmentCardProps) => {
   return (
     <Link href={`/listings/${id}`} passHref>
-    <Card sx={{ maxWidth: 280, borderRadius: 2, boxShadow: 3 }}>
-      <CardMedia component="img" height="120" image={imageUrl} alt={title} />
+    <Card sx={{ maxWidth: 280, borderRadius: 2, height: '400px', boxShadow: 3 }}>
+    <CardMedia
+      component="img"
+      sx={{ height: 180, objectFit: 'cover' }}
+      image={imageUrl}
+      alt={title}
+    />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           {title}

@@ -1,63 +1,159 @@
 "use client";
 
+import { Card, CardContent, CardMedia, Typography, Box, Grid, Button } from '@mui/material';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Maps from '../../components/map-card';
+import { getCoordinatesOfAddress } from '../../utils'; 
 
 interface ColorData {
-  colors: string[];
+  colors: string[] | null;
 }
+
 interface FurnitureItem {
   id: number;
-  userId: number; 
+  userId: number;
   price: number;
   description: string;
   condition: string;
   rating: number;
-  colors: ColorData; 
+  location: string;
+  colors: ColorData | null;
+  pics: string[];
 }
+
+interface Location {
+  latitude: number;
+  longitude: number;
+  description: string;
+}
+
 
 const FurnitureDescriptionPage = () => {
   const router = useRouter();
-  console.log("iam here")
-  const params = useParams<{ id: string }>()
-  const id  = params['id']; 
-  console.log(id);
+  const params = useParams<{ id: string }>();
+  const id = params['id'];
+  const [locations, setLocations] = useState<Location[]>([]);
+  const address = [''];
+  
 
-  const [furnitureItem, setFurnitureItem] = useState<FurnitureItem | null>(null); 
-  const [error, setError] = useState(null);
+  const [furnitureItem, setFurnitureItem] = useState<FurnitureItem | null>(null);
+  const [error, setError] = useState<string | null>(null); 
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     if (id) {
-      console.log("Fetching furniture item with ID:", id);
       const fetchFurnitureItem = async () => {
         try {
           const response = await fetch(`http://localhost:5001/api/furniture/${id}`);
-          console.log("Response status:", response.status); 
           const data = await response.json();
-          console.log("Fetched data:", data); 
           if (response.ok) {
+            if (data.location) {
+              const coords = await getCoordinatesOfAddress(data.location);
+            if (coords) {
+              setLocations([{
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                description: data.description || "Furniture",
+              }]);
+            }
+          }
             setFurnitureItem(data);
           } else {
-            console.log(`Error: ${response.status} - ${data.message}`);
+            setError(`Error: ${response.status} - ${data.message}`);
           }
         } catch (error) {
-          console.log('Error fetching furniture item:', error);
+          setError('Error fetching furniture item: ' + error);
+        } finally {
+          setLoading(false); 
         }
       };
       fetchFurnitureItem();
     }
   }, [id]);
-  
 
-  if (!furnitureItem) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>; 
+  if (!furnitureItem) return <div>No furniture item found.</div>; 
+  address.push(furnitureItem?.location);
+
+  
+  const colorList = Array.isArray(furnitureItem.colors) 
+  ? furnitureItem.colors.join(', ') 
+  : 'None';
 
   return (
-    <div>
-      <h1>{furnitureItem.description}</h1>
-      <p>Price: ${furnitureItem.price}</p>
-      <p>Condition: {furnitureItem.condition}</p>
-      <p>Rating: {furnitureItem.rating}</p>
-    </div>
+    <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '20px auto' }}>
+      <Card 
+        sx={{ 
+          boxShadow: 6, 
+          borderRadius: 2, 
+          minHeight: '80vh', 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}
+      >
+
+        <CardMedia
+          component="img"
+          height="500"
+          image={furnitureItem.pics[0] || "https://via.placeholder.com/400x300"}
+          alt="Listing Image"
+          sx={{ objectFit: 'cover' }}
+        />
+        <CardContent>
+
+          <Typography variant="h4" component="div" gutterBottom>
+            {furnitureItem.description}
+          </Typography>
+
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography variant="h6" color="text.secondary">
+                Price:
+              </Typography>
+              <Typography variant="body1">${furnitureItem.price}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="h6" color="text.secondary">
+                Condition:
+              </Typography>
+              <Typography variant="body1">{furnitureItem.condition}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="h6" color="text.secondary">
+                Rating:
+              </Typography>
+              <Typography variant="body1">{furnitureItem.rating}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="h6" color="text.secondary">
+                Colors:
+              </Typography>
+              <Typography variant="body1">{colorList}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+            {locations.length > 0 ? (
+          <Box sx={{  height: '200px', marginTop: '10px' }}>
+            <Maps locations={locations} names={address} />
+          </Box>
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            No pick-up location set
+          </Typography>
+        )}
+         </Grid>
+          </Grid>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+            <Button variant="contained" color="primary" onClick={() => router.back()}>
+              Back to Listings
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

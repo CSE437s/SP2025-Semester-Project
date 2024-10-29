@@ -1,9 +1,9 @@
 export async function getCoordinatesOfAddress(address) {
-  const key = process.env.NEXT_PUBLIC_GOOGLE_API;
+  //const key = process.env.GEOCODING_API_KEY;
 
   //!!! need to add .env so api key isn't known !!!
   
-  const queryString = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${key}`;
+  const queryString = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.NEXT_PUBLIC_GOOGLE_API}`;
 
   try {
     const response = await fetch(queryString);
@@ -27,7 +27,7 @@ export async function getCoordinatesOfAddress(address) {
 export async function haversineDistance(lat1, lon1) {
   const toRadians = (degrees) => (degrees * Math.PI) / 180;
   const lat2 = 38.648987;
-  const lon2 = -90.312553;
+  const lon2 = -90.312553; 
   const R = 3959;
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);

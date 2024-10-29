@@ -2,10 +2,12 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-interface apartmentItem {
+import { Card, CardContent, CardMedia, Typography, Box, Grid, Button } from '@mui/material';
+import { getCoordinatesOfAddress } from '../../utils'; 
+import Maps from '../../components/map-card';
+interface ApartmentItem {
   id: number;
-  userId: number; 
+  userId: number;
   price: number;
   location: string;
   amenities: string;
@@ -18,52 +20,132 @@ interface apartmentItem {
   rating: number;
 }
 
+interface Location {
+  latitude: number;
+  longitude: number;
+  description: string;
+}
+
 const ApartmentDescriptionPage = () => {
   const router = useRouter();
-  console.log("iam here")
-  const params = useParams<{ id: string }>()
-  const id  = params['id']; 
-
-
-  const [apartmentItem, setApartmentItem] = useState<apartmentItem | null>(null); 
-  const [error, setError] = useState(null);
+  const params = useParams<{ id: string }>();
+  const id = params['id'];
+  const [locations, setLocations] = useState<Location[]>([]);
+  const address = [''];
+  const [apartmentItem, setApartmentItem] = useState<ApartmentItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
-      console.log("Fetching apartment item with ID:", id);
       const fetchApartmentItem = async () => {
         try {
           const response = await fetch(`http://localhost:5001/api/apartment/${id}`);
-          console.log("Response status:", response.status); 
           const data = await response.json();
-          console.log("Fetched data:", data); 
           if (response.ok) {
+            if (data.location) {
+              const coords = await getCoordinatesOfAddress(data.location);
+            if (coords) {
+              setLocations([{
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                description: data.description || "Furniture",
+              }]);
+            }
+          }
             setApartmentItem(data);
           } else {
-            console.log(`Error: ${response.status} - ${data.message}`);
+            setError(`Error: ${response.status} - ${data.message}`);
           }
         } catch (error) {
-          console.log('Error fetching aparment item:', error);
+          setError('Error fetching apartment item: ' + error);
+        } finally {
+          setLoading(false);
         }
       };
       fetchApartmentItem();
     }
   }, [id]);
-  
 
-  if (!apartmentItem) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!apartmentItem) return <div>No apartment item found.</div>;
+  address.push(apartmentItem?.location);
 
   return (
-    <div>
-      <h1>{apartmentItem.description}</h1>
-      <p>Price: ${apartmentItem.price}</p>
-      <p>description: {apartmentItem.description}</p>
-      <p>amenities: {apartmentItem.amenities}</p>
-      <p># of bedrooms: {apartmentItem.bedrooms}</p>
-      <p># of bathrooms: {apartmentItem.bathrooms}</p>
-      <p>policies: {apartmentItem.policies}</p>
-      <p>rating: {apartmentItem.rating}</p>
-    </div>
+    <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '20px auto' }}>
+      <Grid container spacing={2}>
+        {/* Image on the left */}
+        <Grid item xs={12} md={6}>
+          <CardMedia
+            component="img"
+            height="100%"
+            image={apartmentItem.pics[0] || "https://via.placeholder.com/400x300"}
+            alt="Apartment Listing Image"
+            sx={{ objectFit: 'cover', borderRadius: 2 }}
+          />
+        </Grid>
+
+        {/* Info Card on the right */}
+        <Grid item xs={12} md={5}>
+          <Card sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '20px',
+            border: '1px solid rbg(54,119,204)' 
+          }}>            
+          <CardContent>
+              <Typography variant="h4" component="div" gutterBottom>
+                {apartmentItem.description}
+              </Typography>
+
+              <Typography variant="body1" color="text.secondary">
+                Price: ${apartmentItem.price}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Location: {apartmentItem.location}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Bedrooms: {apartmentItem.bedrooms}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Bathrooms: {apartmentItem.bathrooms}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Amenities: {apartmentItem.amenities}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Availability: {apartmentItem.availability}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Policies: {apartmentItem.policies}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Rating: {apartmentItem.rating}
+              </Typography>
+              <Grid item xs={8}>
+            {locations.length > 0 ? (
+          <Box sx={{  height: '200px', marginTop: '10px' }}>
+            <Maps locations={locations} names={address} />
+          </Box>
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            Location Unknown
+          </Typography>
+        )}
+         </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <Button variant="contained" color="primary" onClick={() => router.back()}>
+          Back to Listings
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
