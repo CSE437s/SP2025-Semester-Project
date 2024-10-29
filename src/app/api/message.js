@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
       `SELECT * FROM public.messages
        WHERE (sender_id = $1 AND recipient_id = $2)
           OR (sender_id = $2 AND recipient_id = $1)
-       ORDER BY timestamp ASC`, // Sort by timestamp
+       ORDER BY timestamp ASC`, 
       [senderId, recipientId]
     );
 
@@ -22,7 +22,25 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Endpoint to add a new message
+router.get('/conversations', async (req, res) => {
+    const { userId } = req.query;
+  
+    try {
+      const result = await pool.query(
+        `SELECT DISTINCT ON (CASE WHEN sender_id = $1 THEN recipient_id ELSE sender_id END) *
+         FROM public.messages
+         WHERE sender_id = $1 OR recipient_id = $1
+         ORDER BY timestamp DESC`,
+        [userId]
+      );
+  
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 router.post('/', async (req, res) => {
   const { sender_id, recipient_id, message_text } = req.body;
 

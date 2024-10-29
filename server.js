@@ -1,69 +1,71 @@
-const express = require('express');
-const next = require('next');
-const cors = require('cors'); 
-const path = require('path');
-const http = require('http');
-const socketIo = require('socket.io');
+const { createServer } = require("http");
+const next = require("next");
+const { Server } = require("socket.io");
+const express = require("express");
+const cors = require("cors");
 
-const furnitureRoutes = require('./src/app/api/furniture'); 
-const apartmentRoutes = require('./src/app/api/apartment'); 
-const messagesRoutes = require('./src/app/api/messages');
+const furnitureRoutes = require("./src/app/api/furniture");
+const apartmentRoutes = require("./src/app/api/apartment");
+const messagesRoutes = require("./src/app/api/messages");
 
+const dev = process.env.NODE_ENV !== "production";
+const hostname = "localhost";
+const port = 5001; // Set your custom port here
 
-const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
+// Configure Next.js app with custom hostname and port
+const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  const server = express(); 
-  // const port =  5001;
-  const httpServer = http.createServer(server);
-
-  const io = socketIo(httpServer, {
+  const expressServer = express();
+  const httpServer = createServer(expressServer); // Use httpServer instead of expressServer directly
+  const io = new Server(httpServer, {
     cors: {
-      origin: 'http://localhost:3000',
-      methods: ['GET', 'POST'],
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST"],
     },
   });
 
-  // Use JSON middleware
-  server.use(express.json());
+  // Use JSON and CORS middleware
+  expressServer.use(express.json());
+  expressServer.use(
+    cors({
+      origin: "http://localhost:3000",
+    })
+  );
 
-  // Use CORS middleware
-  server.use(cors({
-    origin: 'http://localhost:3000', 
-  }));
-  
+  // Register API routes
+  expressServer.use("/api/furniture", furnitureRoutes);
+  expressServer.use("/api/apartment", apartmentRoutes);
+  expressServer.use("/api/messages", messagesRoutes);
 
-  server.use('/api/furniture', furnitureRoutes); 
-  server.use('/api/apartment', apartmentRoutes);
-  server.use('/api/messages', messagesRoutes);
+  // Handle Socket.IO connections
+  io.on("connection", (socket) => {
+    console.log("A user connected:", socket.id);
 
-
-  io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-
-    socket.on('message', (messageData) => {
-      socket.broadcast.emit('message', messageData);
+    // Broadcast incoming messages
+    socket.on("message", (messageData) => {
+      socket.broadcast.emit("message", messageData);
     });
 
-    socket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
+    // Handle connection errors
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
     });
 
-    socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
+    // Handle disconnections
+    socket.on("disconnect", () => {
+      console.log("User disconnected:", socket.id);
     });
   });
 
-  // Catch all other requests
-  server.all('*', (req, res) => {
+  // Use Next.js request handler for other routes
+  expressServer.all("*", (req, res) => {
     return handle(req, res);
   });
 
-  const port = 5001;
-  httpServer.listen(port, (err) => {
-    if (err) throw err;
-    console.log(`Server running on http://localhost:${port}`);
+  // Start the server
+  httpServer.listen(port, () => {
+    console.log(`> Server running on http://${hostname}:${port}`);
   });
 });
