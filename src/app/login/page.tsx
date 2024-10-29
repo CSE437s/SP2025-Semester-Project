@@ -16,7 +16,7 @@ const validationSchema = Yup.object({
 const LoginPage = () => {
   const [value, setValue] = React.useState(0); // 0 for Sign In, 1 for Sign Up
   const router = useRouter();
-  const { data: session } = useSession(); 
+  // const { data: session } = useSession(); 
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -59,21 +59,20 @@ const LoginPage = () => {
           const signInRes = await signIn("credentials", {
             email: values.email,
             password: values.password,
-            redirect: false, 
+            callbackUrl: `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/setup-profile?isNewUser=true&email=${values.email}`, // Redirect new users to setup-profile
+            redirect: false,
           });
-        
+          
           if (signInRes?.ok) {
-            router.push('/furniture');
+            router.push('/setup-profile');
           } else {
-            alert('Error signing up, please try again')
-            console.error("Auto sign-in failed after sign-up");
+            alert('Error signing up, please try again');
           }
         } else {
-          alert('Error signing up, please try again')
-          console.log("Registration failed");
+          alert('Error signing up, please try again');
         }
       }
-      formik.resetForm(); 
+      formik.resetForm();
     },
   });
 
