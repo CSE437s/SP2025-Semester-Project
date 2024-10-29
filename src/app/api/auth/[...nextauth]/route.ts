@@ -67,9 +67,18 @@ const options: NextAuthOptions = {
         session.user = {
           id: token.id,
           email: token.email,
+          bio: token.bio || '',
+          name: token.name || '',
         };
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      const isNewUser = url.includes("isNewUser=true");
+      if (isNewUser) {
+        return `${baseUrl}/setup-profile?email=${encodeURIComponent(url.split("email=")[1])}`;
+      }
+      return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
 };

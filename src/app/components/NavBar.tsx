@@ -9,7 +9,8 @@ import { handleSignOut } from '../utils/auth/signOutHandler';
 const drawerWidth = 240;
 const navItems = [
   { text: 'Furniture', href: '/furniture' }, 
-  { text: 'Listings', href: '/listings' },   
+  { text: 'Listings', href: '/listings' },
+  { text: 'Profile', href: '/profile' },
   { text: 'Login', href: '/login' },   
   { text: 'Sign Out', href: '#' }
 ];
@@ -25,13 +26,10 @@ export default function DrawerAppBar(props: { window?: () => Window }) {
   };
 
   const filteredItems = navItems.filter(item => {
-    let isSignedIn = true;
-    if (session && item.text === 'Login'){
-      isSignedIn = false;
-    } else if (!session && item.text === 'Sign Out'){
-      isSignedIn = false;
-    }
-    return isSignedIn;
+    if (item.text === 'Login' && session) return false;   
+    if (item.text === 'Sign Out' && !session) return false; 
+    if (item.text === 'Profile' && !session) return false; 
+    return true;
   });
 
   const drawer = (

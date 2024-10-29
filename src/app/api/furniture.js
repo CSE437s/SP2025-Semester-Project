@@ -81,7 +81,6 @@ router.post('/upload', async (req, res) => {
 
     const colorsArray = colors ? JSON.stringify(colors) : null; 
 
-    // Insert the new furniture listing into the database
     const result = await pool.query(
       `INSERT INTO furniture_listing (user_id, price, description, condition, pics, colors, location)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
@@ -100,9 +99,9 @@ router.post('/upload', async (req, res) => {
   } catch (error) {
     console.error('Error saving furniture listing:', error);
     if (error.name === 'ValidationError') {
-      return res.status(400).json({ error: error.message }); // Handle validation errors
+      return res.status(400).json({ error: error.message }); 
     }
-    res.status(500).json({ error: 'Internal server error' }); // Handle general errors
+    res.status(500).json({ error: 'Internal server error' }); 
   }
 });
 
@@ -111,7 +110,6 @@ router.post('/check-or-add-user', async (req, res) => {
   const { user_id } = req.body;
 console.log(user_id);
   try {
-    // Check if the user exists in the business_user table
     const userCheck = await pool.query('SELECT * FROM public."business_user" WHERE user_id = $1', [user_id]);
 
     if (userCheck.rows.length === 0) {
