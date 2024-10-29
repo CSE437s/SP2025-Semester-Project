@@ -5,7 +5,7 @@
 import { useSession } from 'next-auth/react';
 import { Container, Typography, Box, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 
 type UserProfile = {
@@ -19,6 +19,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("id");
 
 
   useEffect(() => {
@@ -28,9 +30,10 @@ export default function Profile() {
       }
   
     async function fetchProfile() {
-      if (session && session.user?.email) {
+      const profile_id = userId || session.user?.id;
+
         try {
-          const response = await fetch(`/api/user/profile?email=${session.user.email}`);
+          const response = await fetch(`/api/user/profile?id=${profile_id}`);
           if (response.ok) {
             const data = await response.json();
             setProfile(data);
@@ -43,7 +46,7 @@ export default function Profile() {
           setLoading(false);
         }
       }
-    }
+    
     fetchProfile();
   }, [session]);
 

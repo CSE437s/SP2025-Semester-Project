@@ -7,7 +7,7 @@ import { getCoordinatesOfAddress } from '../../utils';
 import Maps from '../../components/map-card';
 interface ApartmentItem {
   id: number;
-  userId: number;
+  user_id: number;
   price: number;
   location: string;
   amenities: string;
@@ -135,6 +135,14 @@ const ApartmentDescriptionPage = () => {
             Location Unknown
           </Typography>
         )}
+
+<Button 
+  variant="contained" 
+  color="primary" 
+  onClick={() => router.push(`../profile?userId=${apartmentItem.user_id}`)}
+>
+  View Profile
+</Button>
          </Grid>
             </CardContent>
           </Card>
@@ -145,6 +153,7 @@ const ApartmentDescriptionPage = () => {
           Back to Listings
         </Button>
       </Box>
+
     </Box>
   );
 };

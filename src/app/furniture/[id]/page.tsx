@@ -12,7 +12,7 @@ interface ColorData {
 
 interface FurnitureItem {
   id: number;
-  userId: number;
+  user_id: number;
   price: number;
   description: string;
   condition: string;
@@ -20,6 +20,7 @@ interface FurnitureItem {
   location: string;
   colors: ColorData | null;
   pics: string[];
+  name: string;
 }
 
 interface Location {
@@ -144,6 +145,19 @@ const FurnitureDescriptionPage = () => {
           </Typography>
         )}
          </Grid>
+
+         <Grid item xs={6}>
+              <Typography variant="h6" color="text.secondary">
+                Seller:
+              </Typography>
+              <Button 
+  variant="contained" 
+  color="primary" 
+  onClick={() => router.push(`../profile?userId=${furnitureItem.user_id}`)}
+>
+  View Profile
+</Button>
+            </Grid>
           </Grid>
 
           <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
