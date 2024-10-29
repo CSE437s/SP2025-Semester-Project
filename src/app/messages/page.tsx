@@ -27,16 +27,15 @@ const MessagesPage = () => {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const recipientId = searchParams.get('recipientId');
+  const senderId = searchParams.get('sellerId');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const senderId = session?.user?.id;
 
   if (!session) {
     return <p>Please log in to view your messages.</p>;
   }
 
-  // Fetch existing conversations if recipientId is not provided
   useEffect(() => {
     if (!recipientId) {
       const fetchConversations = async () => {
@@ -52,9 +51,8 @@ const MessagesPage = () => {
     }
   }, [session, recipientId]);
 
-  // Start a new conversation if recipientId is provided
   useEffect(() => {
-    if (recipientId) {
+    if (recipientId && senderId) {
       const fetchOrCreateConversation = async () => {
         try {
           const response = await fetch(`/api/messages?senderId=${senderId}&recipientId=${recipientId}`);
@@ -63,7 +61,7 @@ const MessagesPage = () => {
           setConversations([
             {
               userId: recipientId,
-              username: "New User", // Replace with actual username if available
+              username: "New User", 
               messages: data,
             },
           ]);
@@ -97,7 +95,7 @@ const MessagesPage = () => {
     if (newMessage.trim() && recipientId) {
       const messageData: Message = {
         id: Date.now(),
-        sender_id: senderId,
+        sender_id: senderId || '',
         recipient_id: recipientId,
         message_text: newMessage,
         timestamp: new Date().toISOString(),

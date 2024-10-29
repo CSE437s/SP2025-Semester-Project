@@ -81,8 +81,7 @@ const FurnitureDescriptionPage = () => {
         router.push('/login'); 
       }
     } else {
-      // Redirect to Messages page with recipientId
-      router.push(`/messages?recipientId=${furnitureItem?.user_id}`);
+      router.push(`/messages?recipientId=${furnitureItem?.user_id}&sellerId=${session?.user?.id}`);
     }
   };
 
