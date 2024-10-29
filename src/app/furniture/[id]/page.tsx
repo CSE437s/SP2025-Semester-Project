@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Maps from '../../components/map-card';
 import { getCoordinatesOfAddress } from '../../utils'; 
+import { useSession } from 'next-auth/react';
 
 interface ColorData {
   colors: string[] | null;
@@ -12,7 +13,7 @@ interface ColorData {
 
 interface FurnitureItem {
   id: number;
-  userId: number;
+  user_id: number;
   price: number;
   description: string;
   condition: string;
@@ -30,6 +31,7 @@ interface Location {
 
 
 const FurnitureDescriptionPage = () => {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params['id'];
@@ -71,6 +73,17 @@ const FurnitureDescriptionPage = () => {
       fetchFurnitureItem();
     }
   }, [id]);
+
+  const handleContactLister = () => {
+    if (status === 'unauthenticated') {
+      const res = confirm("You must be logged in to contact the lister. Do you want to log in or sign up?");
+      if (res) {
+        router.push('/login'); 
+      }
+    } else {
+      router.push(`/messages?recipientId=${furnitureItem?.user_id}`);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>; 
@@ -149,6 +162,14 @@ const FurnitureDescriptionPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
             <Button variant="contained" color="primary" onClick={() => router.back()}>
               Back to Listings
+            </Button>
+            <Button 
+              variant="contained" 
+              color="secondary" 
+              onClick={handleContactLister}
+              sx={{ marginLeft: '10px' }}
+            >
+              Contact Lister
             </Button>
           </Box>
         </CardContent>
