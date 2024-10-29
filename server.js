@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const furnitureRoutes = require("./src/app/api/furniture");
 const apartmentRoutes = require("./src/app/api/apartment");
-const messagesRoutes = require("./src/app/api/messages");
+const messagesRoutes = require("./src/app/api/message");
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -34,7 +34,7 @@ app.prepare().then(() => {
 
   expressServer.use("/api/furniture", furnitureRoutes);
   expressServer.use("/api/apartment", apartmentRoutes);
-  expressServer.use("/api/messages", messagesRoutes);
+  expressServer.use("/api/message", messagesRoutes);
 
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
