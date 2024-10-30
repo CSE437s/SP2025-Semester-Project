@@ -7,7 +7,6 @@ import { Accordion, AccordionSummary, AccordionDetails, Typography, TextField, B
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSearchParams } from 'next/navigation';
 
-// Initialize socket connection once
 const socket = io('http://localhost:5001', { transports: ['websocket'] });
 
 interface Message {
@@ -63,13 +62,13 @@ const MessagesPage = () => {
 
   useEffect(() => {
     socket.on('message', (messageData: Message) => {
-      console.log('Message received:', messageData); // Debugging log
+      console.log('Message received:', messageData); 
   
       setConversations((prevConversations) => {
         return prevConversations.map((conversation) => {
           const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
   
-          // Update the conversation if it matches the recipient or sender
+         
           if (
             conversation.conversation_partner_id === messageData.sender_id || 
             conversation.conversation_partner_id === messageData.recipient_id
@@ -84,9 +83,8 @@ const MessagesPage = () => {
       });
     });
   
-    // Cleanup function to prevent memory leaks
     return () => {
-      socket.off('message'); // Unsubscribe from the message event
+      socket.off('message'); 
     };
   }, []);
 
@@ -97,11 +95,11 @@ const MessagesPage = () => {
         recipient_id: recipientId,
         message_text: newMessage,
         timestamp: new Date().toISOString(),
-        recipient_name: recipient_name // This is optional
+        recipient_name: recipient_name 
       };
   
-      console.log('Sending message:', messageData); // Debugging log
-      socket.emit('message', messageData); // Send through socket
+      console.log('Sending message:', messageData); 
+      socket.emit('message', messageData); 
   
       try {
         const response = await fetch('http://localhost:5001/api/message', {
@@ -125,7 +123,7 @@ const MessagesPage = () => {
         console.error("Error saving message:", error);
       }
   
-      setNewMessage(''); // Clear the input
+      setNewMessage(''); 
     }
   };
   
@@ -136,14 +134,27 @@ const MessagesPage = () => {
       const fetchOrCreateConversation = async () => {
         try {
           const response = await fetch(`http://localhost:5001/api/message?senderId=${senderId}&recipientId=${recipientId}`);
-          const data: Message[] = await response.json();
-          setConversations([
-            {
-              conversation_partner_name: data[0]?.recipient_name || 'Unknown', 
-              conversation_partner_id: recipientId,
-              messages: data,
-            },
-          ]);
+          const data = await response.json();
+
+          //first time texting
+          if (!data.hasMessages) {
+            setConversations([
+              {
+                conversation_partner_name: data.recipient_name || 'Unknown',
+                conversation_partner_id: recipientId,
+                messages: [],
+              },
+            ]);
+          } else {
+            // Existing conversation 
+            setConversations([
+              {
+                conversation_partner_name: data.messages[0]?.recipient_name || data.messages[0]?.name || 'Unknown',
+                conversation_partner_id: recipientId,
+                messages: data.messages,
+              },
+            ]);
+          }
           setSelectedConversation(recipientId);
         } catch (error) {
           console.error("Error initializing conversation:", error);
@@ -152,6 +163,7 @@ const MessagesPage = () => {
       fetchOrCreateConversation();
     }
   }, [recipientId, senderId]);
+  
 
 
 

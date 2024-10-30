@@ -21,6 +21,7 @@ interface FurnitureItem {
   location: string;
   colors: ColorData | null;
   pics: string[];
+  name: string;
 }
 
 interface Location {
@@ -31,12 +32,12 @@ interface Location {
 
 
 const FurnitureDescriptionPage = () => {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params['id'];
   const [locations, setLocations] = useState<Location[]>([]);
   const address = [''];
+  const { data: session, status } = useSession();
   
 
   const [furnitureItem, setFurnitureItem] = useState<FurnitureItem | null>(null);
@@ -74,6 +75,18 @@ const FurnitureDescriptionPage = () => {
     }
   }, [id]);
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>; 
+  if (!furnitureItem) return <div>No furniture item found.</div>; 
+  address.push(furnitureItem?.location);
+
+  
+  const colorList = Array.isArray(furnitureItem.colors) 
+  ? furnitureItem.colors.join(', ') 
+  : 'None';
+
+
+
   const handleContactLister = () => {
     if (status === 'unauthenticated') {
       const res = confirm("You must be logged in to contact the lister. Do you want to log in or sign up?");
@@ -84,16 +97,6 @@ const FurnitureDescriptionPage = () => {
       router.push(`/messages?recipientId=${furnitureItem?.user_id}&sellerId=${session?.user?.id}`);
     }
   };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>; 
-  if (!furnitureItem) return <div>No furniture item found.</div>; 
-  address.push(furnitureItem?.location);
-
-  
-  const colorList = Array.isArray(furnitureItem.colors) 
-  ? furnitureItem.colors.join(', ') 
-  : 'None';
 
   return (
     <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '20px auto' }}>
@@ -157,19 +160,32 @@ const FurnitureDescriptionPage = () => {
           </Typography>
         )}
          </Grid>
-          </Grid>
 
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-            <Button variant="contained" color="primary" onClick={() => router.back()}>
-              Back to Listings
-            </Button>
-            <Button 
+         <Grid item xs={6}>
+              <Typography variant="h6" color="text.secondary">
+                Seller:
+              </Typography>
+              <Button 
+  variant="contained" 
+  color="primary" 
+  onClick={() => router.push(`../profile?userId=${furnitureItem.user_id}`)}
+>
+  View Profile
+</Button>
+<Button 
               variant="contained" 
               color="secondary" 
               onClick={handleContactLister}
               sx={{ marginLeft: '10px' }}
             >
               Contact Lister
+            </Button>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+            <Button variant="contained" color="primary" onClick={() => router.back()}>
+              Back to Listings
             </Button>
           </Box>
         </CardContent>
@@ -179,4 +195,3 @@ const FurnitureDescriptionPage = () => {
 };
 
 export default FurnitureDescriptionPage;
-

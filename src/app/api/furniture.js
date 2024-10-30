@@ -23,9 +23,10 @@ router.get('/:id', async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT fl.*, bu.rating 
+      `SELECT fl.*, bu.rating, u.name
        FROM public."furniture_listing" fl 
        JOIN public."business_user" bu ON bu.user_id = fl."user_id" 
+       JOIN public."User" u on u.id = fl."user_id"
        WHERE fl.id = $1`, [id] 
     );
 
