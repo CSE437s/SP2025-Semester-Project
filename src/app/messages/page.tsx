@@ -6,8 +6,8 @@ import { useSession } from 'next-auth/react';
 import { Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSearchParams } from 'next/navigation';
-import Script from 'next/script';
 
+// Initialize socket connection once
 const socket = io('http://localhost:5001', { transports: ['websocket'] });
 
 interface Message {
@@ -15,11 +15,13 @@ interface Message {
   recipient_id: string;
   message_text: string;
   timestamp: string;
+  recipient_name?: string; 
 }
 
 interface Conversation {
-  conversation_partner: string; // Change userId to conversation_partner
-  messages: Message[]; // An array of messages within a single conversation
+  conversation_partner_name: string; 
+  conversation_partner_id: string;
+  messages: Message[];
 }
 
 const MessagesPage = () => {
@@ -33,103 +35,74 @@ const MessagesPage = () => {
 
   if (!session) {
     return <p>Please log in to view your messages.</p>;
-  }
-
-
+  } 
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("socket: ",socket.id); 
-    });
-
-    socket.on('message', (messageData) => {
-      console.log('New message received:', messageData);
-  });
-    if (!recipientId) {
+    if (session) {
       const fetchConversations = async () => {
         try {
-          if (session) {
-            const response = await fetch(`http://localhost:5001/api/message/conversations?userId=${session.user.id}`);
-            const data = await response.json();
-            
-            console.log("Fetched data:", data);
-      
-            // Initialize `messages` using `message_text` as an array with a single item
-            const initializedConversations = data.map((conversation) => ({
-              ...conversation,
-              messages: Array.isArray(conversation.messages) ? conversation.messages : [{ 
-                sender_id: conversation.sender_id, 
-                recipient_id: conversation.recipient_id, 
-                message_text: conversation.message_text, 
-                timestamp: conversation.timestamp 
-              }]
-            }));
-            
-            setConversations(initializedConversations);
-            console.log("Conversations state updated:", initializedConversations);
-          }
+          const response = await fetch(`http://localhost:5001/api/message/conversations?userId=${session.user.id}`);
+          const data: Conversation[] = await response.json();
+
+          
+          const updatedConversations = data.map(conversation => ({
+            ...conversation,
+            conversation_partner_name: conversation.conversation_partner_name 
+          }));
+
+          setConversations(updatedConversations);
         } catch (error) {
           console.error("Error fetching conversations:", error);
         }
       };
       fetchConversations();
     }
-  }, [session, recipientId]);
+  }, [session]);
 
-  useEffect(() => {
-    if (recipientId && senderId) {
-      const fetchOrCreateConversation = async () => {
-        try {
-          const response = await fetch(`http://localhost:5001/api/message?senderId=${senderId}&recipientId=${recipientId}`);
-          const data: Message[] = await response.json();
-          
-          setConversations([
-            {
-              conversation_partner: recipientId, // Updated to use conversation_partner
-              messages: data,
-            },
-          ]);
-          setSelectedConversation(recipientId);
-        } catch (error) {
-          console.error("Error initializing conversation:", error);
-        }
-      };
-      fetchOrCreateConversation();
-    }
-  }, [recipientId, session]);
 
-  // Handle real-time messages
+
   useEffect(() => {
     socket.on('message', (messageData: Message) => {
-      console.log("messageData",messageData);
-      setConversations((prevConversations) =>
-        prevConversations.map((conversation) => {
-          // Make sure messages is always an array
+      console.log('Message received:', messageData); // Debugging log
+  
+      setConversations((prevConversations) => {
+        return prevConversations.map((conversation) => {
           const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
-          
-          return conversation.conversation_partner === messageData.sender_id || conversation.conversation_partner === messageData.recipient_id
-            ? { ...conversation, messages: [...messages, messageData] } // Use the initialized messages
-            : conversation;
-        })
-      );
+  
+          // Update the conversation if it matches the recipient or sender
+          if (
+            conversation.conversation_partner_id === messageData.sender_id || 
+            conversation.conversation_partner_id === messageData.recipient_id
+          ) {
+            return { 
+              ...conversation, 
+              messages: [...messages, messageData] 
+            };
+          }
+          return conversation;
+        });
+      });
     });
-
+  
+    // Cleanup function to prevent memory leaks
     return () => {
-      socket.off('message');
+      socket.off('message'); // Unsubscribe from the message event
     };
   }, []);
 
-  const handleSendMessage = async (recipientId: string) => {
+  const handleSendMessage = async (recipientId: string, recipient_name: string) => {
     if (newMessage.trim() && recipientId) {
       const messageData: Message = {
         sender_id: session.user.id,
         recipient_id: recipientId,
         message_text: newMessage,
         timestamp: new Date().toISOString(),
+        recipient_name: recipient_name // This is optional
       };
   
-      socket.emit('message', messageData);
-      console.log(messageData);
+      console.log('Sending message:', messageData); // Debugging log
+      socket.emit('message', messageData); // Send through socket
+  
       try {
         const response = await fetch('http://localhost:5001/api/message', {
           method: 'POST',
@@ -140,7 +113,7 @@ const MessagesPage = () => {
   
         setConversations((prevConversations) =>
           prevConversations.map((conversation) =>
-            conversation.conversation_partner === recipientId
+            conversation.conversation_partner_id === recipientId 
               ? {
                   ...conversation,
                   messages: [...(conversation.messages || []), savedMessage], 
@@ -152,32 +125,57 @@ const MessagesPage = () => {
         console.error("Error saving message:", error);
       }
   
-      setNewMessage('');
+      setNewMessage(''); // Clear the input
     }
   };
   
-console.log();
+
+
+  useEffect(() => {
+    if (recipientId && senderId) {
+      const fetchOrCreateConversation = async () => {
+        try {
+          const response = await fetch(`http://localhost:5001/api/message?senderId=${senderId}&recipientId=${recipientId}`);
+          const data: Message[] = await response.json();
+          setConversations([
+            {
+              conversation_partner_name: data[0]?.recipient_name || 'Unknown', 
+              conversation_partner_id: recipientId,
+              messages: data,
+            },
+          ]);
+          setSelectedConversation(recipientId);
+        } catch (error) {
+          console.error("Error initializing conversation:", error);
+        }
+      };
+      fetchOrCreateConversation();
+    }
+  }, [recipientId, senderId]);
+
+
+
   return (
-    
     <div>
-      
       <h1>Your Conversations</h1>
       {conversations.map((conversation) => (
         <Accordion
-          key={conversation.conversation_partner} // Use conversation_partner as the key
-          expanded={selectedConversation === conversation.conversation_partner}
-          onChange={() => setSelectedConversation(selectedConversation === conversation.conversation_partner ? null : conversation.conversation_partner)}
+          key={conversation.conversation_partner_id}
+          expanded={selectedConversation === conversation.conversation_partner_id} 
+          onChange={() => setSelectedConversation(
+            selectedConversation === conversation.conversation_partner_id ? null : conversation.conversation_partner_id 
+          )}
         >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>{conversation.conversation_partner}</Typography>
+            <Typography>{conversation.conversation_partner_name}</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <div className="message-list">
-              {Array.isArray(conversation.messages) && conversation.messages.length > 0 ? (
+              {conversation.messages && conversation.messages.length > 0 ? (
                 conversation.messages.map((msg) => (
                   <div key={`${msg.sender_id}-${msg.timestamp}`}>
                     <p>
-                      <strong>{msg.sender_id === session.user.id ? "You" : conversation.conversation_partner}:</strong> {msg.message_text}
+                      <strong>{msg.sender_id === session.user.id ? "You" : conversation.conversation_partner_name}:</strong> {msg.message_text}
                     </p>
                     <small>{new Date(msg.timestamp).toLocaleString()}</small>
                   </div>
@@ -186,7 +184,6 @@ console.log();
                 <p>No messages to display</p>
               )}
             </div>
-
             <TextField
               label="Type a message..."
               value={newMessage}
@@ -195,7 +192,7 @@ console.log();
               variant="outlined"
               margin="dense"
             />
-            <Button onClick={() => handleSendMessage(conversation.conversation_partner)} variant="contained" color="primary">
+            <Button onClick={() => handleSendMessage(conversation.conversation_partner_id, conversation.conversation_partner_name)} variant="contained" color="primary">
               Send
             </Button>
           </AccordionDetails>
