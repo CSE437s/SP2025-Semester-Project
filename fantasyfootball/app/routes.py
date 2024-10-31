@@ -37,6 +37,7 @@ def extract_serializable_data(obj):
 
 @api.route("/auth", methods=["GET"])
 def auth():
+    
     redirect_uri = os.getenv("REDIRECT_URI")
     client_id = os.getenv("YAHOO_CLIENT_ID")
     client_secret = os.getenv("YAHOO_CLIENT_SECRET")
@@ -83,6 +84,7 @@ def home():
     for league in leagues:
         if isinstance(league.name, bytes):
             league.name = league.name.decode("utf-8")
+            
 
     if request.method == "POST":
         selected_league_id = request.form.get("league_id")
@@ -94,24 +96,62 @@ def home():
             yahoo_consumer_secret=os.getenv("YAHOO_CLIENT_SECRET"),
             env_file_location=Path(""),
         )
+    
+        # player_team_data = []
+        # league_teams = query.get_league_teams()
+        # rosters = []
+        # player_team_data = []
+        # for team in league_teams:
+        #     team_info = query.get_team_info(team.team_id)._extracted_data
+        #     team_roster = team_info["roster"]
+        #     for player in team_roster.players:
+        #         player_name = player.name.full
+        #         player_team_data.append(
+        #             {
+        #                 "player_name": player_name,
+        #                 "team_name": team_info["name"],
+        #                 "primary_position": player.primary_position
+        #             }
+        #         )]
 
-        player_team_data = []
-        league_teams = query.get_league_teams()
-        rosters = []
-        player_team_data = []
-        for team in league_teams:
-            team_info = query.get_team_info(team.team_id)._extracted_data
-            team_roster = team_info["roster"]
-            for player in team_roster.players:
-                player_name = player.name.full
-                player_team_data.append(
-                    {
-                        "player_name": player_name,
-                        "team_name": team_info["name"],
-                    }
-                )
+        players = query.get_league_players()
 
-        df = pd.DataFrame(player_team_data)
+        player_data = []
+
+        for player in players:
+            # Base data for each player
+            player_info = {
+                "player_name": player.name.full,
+                "primary_position": player.primary_position,
+                "owner_name": player.ownership.owner_team_name,
+                "bye": player.bye,
+                "team_abb": player.editorial_team_abbr,
+                "image": player.image_url,
+                "status": player.status,
+                "injury": player.injury_note,
+                "uniform_num": player.uniform_number,
+                "percent_owned": player.percent_owned,
+            }
+
+            
+            stat_list = player.player_stats.stats
+            if stat_list:
+                for stat in stat_list:
+                    
+                    stat_name = stat.name
+                    stat_value = stat.value
+
+                    if stat_name and stat_value is not None:
+                        
+                        player_info[stat_name] = stat_value
+                    else:
+                        print(f"Stat data missing for player: {player.name.full}, stat: {stat_name}")
+
+            
+            player_data.append(player_info)
+
+        # Create the DataFrame
+        df = pd.DataFrame(player_data)
 
         if not os.path.exists("data"):
             os.makedirs("data")
@@ -119,7 +159,7 @@ def home():
         # Save the DataFrame to CSV
         df.to_csv("data/player_team_data.csv", index=False)
 
-        update_ownership()
+        # update_ownership()
 
         # Pass team name and players to the template
         return render_template(
@@ -136,6 +176,7 @@ def home():
     # Access the roster
 
     # return team_info
+
 
 
 def update_ownership():
@@ -410,9 +451,3 @@ def trade_builder():
         team2_roster=team2_roster,
         trade_feedback=trade_feedback,
     )
-
-
-# 
-#
-#
-#
