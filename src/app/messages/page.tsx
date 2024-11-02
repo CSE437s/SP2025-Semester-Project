@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense  } from 'react';
 import { io } from "socket.io-client";
 import { useSession } from 'next-auth/react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Button } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Button, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSearchParams } from 'next/navigation';
 
@@ -23,7 +23,7 @@ interface Conversation {
   messages: Message[];
 }
 
-const MessagesPage = () => {
+const MessagesContent = () => {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const recipientId = searchParams.get('recipientId');
@@ -213,5 +213,11 @@ const MessagesPage = () => {
     </div>
   );
 };
+
+const MessagesPage = () => (
+  <Suspense fallback={<CircularProgress />}>
+    <MessagesContent />
+  </Suspense>
+);
 
 export default MessagesPage;

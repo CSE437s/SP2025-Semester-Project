@@ -1,12 +1,9 @@
-// /src/app/profile/page.tsx
-
 "use client";
 
 import { useSession } from 'next-auth/react';
 import { Container, Typography, Box, CircularProgress } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
 
 type UserProfile = {
   email: string;
@@ -14,7 +11,7 @@ type UserProfile = {
   bio: string | null;
 };
 
-export default function Profile() {
+const ProfileContent = () => {
   const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,33 +19,35 @@ export default function Profile() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
-
   useEffect(() => {
     if (!session || !session.user) {
-        router.push('/furniture');
-        return;
-      }
-  
+      router.push('/furniture');
+      return;
+    }
+
     async function fetchProfile() {
-
-      
-      const profile_id = userId || session.user?.id;
-
-        try {
-          const response = await fetch(`/api/user/profile?id=${profile_id}`);
-          if (response.ok) {
-            const data = await response.json();
-            setProfile(data);
-          } else {
-            console.error("Failed to fetch profile data");
-          }
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-        } finally {
-          setLoading(false);
-        }
+      let profile_id;
+      if (session) {
+        profile_id = session.user.id;
+      } else {
+        profile_id = userId;
       }
-    
+
+      try {
+        const response = await fetch(`/api/user/profile?id=${profile_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(data);
+        } else {
+          console.error("Failed to fetch profile data");
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchProfile();
   }, [session]);
 
@@ -77,4 +76,12 @@ export default function Profile() {
       </Box>
     </Container>
   );
-}
+};
+
+const Profile = () => (
+  <Suspense fallback={<CircularProgress />}>
+    <ProfileContent />
+  </Suspense>
+);
+
+export default Profile;
