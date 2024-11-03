@@ -3,7 +3,7 @@ from psycopg2 import pool
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Define your connection pool globally
 try:

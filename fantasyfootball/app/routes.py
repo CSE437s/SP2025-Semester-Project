@@ -120,23 +120,27 @@ def home():
 
         for player in players:
             # Base data for each player
+            print(extract_serializable_data(player.ownership.owner_team_name))
+            print(player.ownership.owner_team_name)
             player_info = {
                 "player_name": player.name.full,
                 "primary_position": player.primary_position,
-                "owner_name": player.ownership.owner_team_name,
+                "owner_name": extract_serializable_data(player.ownership.owner_team_name),
                 "bye": player.bye,
                 "team_abb": player.editorial_team_abbr,
                 "image": player.image_url,
                 "status": player.status,
                 "injury": player.injury_note,
                 "uniform_num": player.uniform_number,
-                "percent_owned": player.percent_owned,
+                "percent_owned": player.percent_owned.value,
             }
 
             
             stat_list = player.player_stats.stats
             if stat_list:
                 for stat in stat_list:
+
+                    stat = stat._extracted_data
                     
                     stat_name = stat.name
                     stat_value = stat.value
@@ -349,6 +353,27 @@ def calculate_consistency(player):
     return total_points, grade
 
 
+def topQB(player_data):
+    return "Drake Maye"
+
+def topRBs(player_data):
+    return "Derrick Henry","Saquon Barkley"
+
+def topWRs(player_data):
+    return "Justin Jefferson", "AJ Brown"
+
+def topTE(player_data):
+    return "Brock Bowers"
+
+def topFLEX(player_data):
+    return "Demario Douglas"
+
+def topK(player_data):
+    return "Brandon Aubrey"
+
+def topDst(player_data):
+    return "Jets"
+
 @main.route('/team-analyzer', methods=['GET', 'POST'])
 def team_analyzer():
     try:
@@ -386,11 +411,19 @@ def team_analyzer():
                 }
                 player_data['grade'] = analyze_player(player_data)
                 total_points, std_dev = calculate_consistency(player_data)
+                qb = topQB(player_data)
+                rbs = topRBs(player_data)
+                wrs = topWRs(player_data)
+                te = topTE(player_data)
+                flex = topFLEX(player_data)
+                k = topK(player_data)
+                dst = topDst(player_data)
+
                 player_data['total_points'] = total_points if total_points is not None else "N/A"
                 player_data['std_dev'] = std_dev if std_dev is not None else "N/A"
                 players.append(player_data)
 
-        return render_template('team_analyzer.html', teams=teams, selected_team=selected_team, players=players)
+        return render_template('team_analyzer.html', teams=teams, selected_team=selected_team, players=playersl)
     except Exception as e:
         print(f"Error fetching team analyzer data: {e}")
         return render_template('error.html', error_message=str(e))

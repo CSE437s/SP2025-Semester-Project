@@ -27,12 +27,7 @@
                     <th>Player</th>
                     <th>Position</th>
                     <th>Rank</th>
-                    <th>Wk 1 Points</th>
-                    <th>Wk 2 Points</th>
-                    <th>Wk 3 Points</th>
-                    <th>Wk 4 Points</th>
-                    <th>Wk 5 Points</th>
-                    <th>Wk 6 Points</th>
+                    <th>Points per Game</th>
                     <th>Total Points</th>
                     <th>Consistency Grade</th>
                     <th>Ovr Grade</th>
@@ -49,12 +44,7 @@
                     </td>
                     <td>{{ player.Pos }}</td>
                     <td>{{ player.Rankbypos }}</td>
-                    <td>{{ player.WK1Pts }}</td>
-                    <td>{{ player.WK2Pts }}</td>
-                    <td>{{ player.WK3Pts }}</td>
-                    <td>{{ player.WK4Pts }}</td>
-                    <td>{{ player.WK5Pts }}</td>
-                    <td>{{ player.WK6Pts }}</td>
+                    <td>PPG</td>
                     <td>{{ player.total_points }}</td>
                     <td>{{ player.std_dev }}</td>
                     <td>{{ player.grade }}</td>
@@ -63,7 +53,30 @@
             </tbody>
         </table>
     </div>
+    <div class="position-scores">
+        <h2>Greatest strength:</h2>
+        <h3>Wide Receivers </h3>
+
+        <h2>Greatest weakness:</h2>
+        <h3>Running Backs </h3>
+    </div>
+
+
+    <div class="optimal-lineup">
+        <h2>Optimal Lineup for Week _</h2>
+        <h4>QB:</h4>
+        <h4>RB:</h4>
+        <h4>RB:</h4>
+        <h4>WR:</h4>
+        <h4>WR:</h4>
+        <h4>FLEX:</h4>
+        <h4>DST:</h4>
+        <h4>K:</h4>
+    </div>
     {% endif %}
+
+    
+    
 </div>
 
 <!-- Player Info Dashboard Modal -->
@@ -171,5 +184,86 @@
     .close:hover {
         color: #ff0000; /* Change color on hover */
     }
+
+    /*
+Analysis:
+
+Columns:
+
+
+Player Name (i)
+Player Team
+Player Position
+Upcoming Matchup (team playing against current week)
+Projected points
+
+
+
+Analysis:
+1. Outperforming projections - has outperformed projections in x/y weeks
+2. Defense database - facing top 10 defense in fantasy vs position
+3. Injury Status
+
+** Lineup Optimizer**
+Use projected points - but our own adjustments. Potential adjustments:
+--> home game
+--> on a good team
+--> opp def rank against position
+--> recent hot streak (did outperform last week = boost)
+--> off a bye week (more rest)
+--> consistent performers
+
+our_projections = {}
+
+for player in team_roster:
+    projection = player.proj_points
+
+    // check home
+    if home == true:
+        projection = projection * 1.05
+    
+    if good_team:
+        projection = projection * 1.05
+
+    if opp_rank against receiver in bottom 10:
+        projection = projection * 0.95
+
+    if opp_rank against receiver in top 10:
+        projection = projection * 1.05
+    
+    if outperfomed last week:
+        projection = projection * 1.05
+
+    if bye was last week:
+        projection = projection * 1.05
+    
+    if consistent:
+        projection = projection * 1.05
+
+    our_projections[player] = projection
+
+
+
+
+
+
+Assume:
+QB
+RB
+RB
+WR
+WR
+TE
+DEF
+K
+
+
+
+
+
+
+*/
 </style>
+
 {% endblock %}
+
