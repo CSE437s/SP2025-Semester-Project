@@ -134,7 +134,7 @@ const Listings = () => {
   return (
     <div className="flex flex-col  lg:flex-row p-8 space-x-0 lg:space-x-4">
   {/* Map Section */}
-  <div className="w-full lg:w-7/10 h-auto">
+  <div className="w-full lg:w-7/10 h-[1000px]">
     <Maps locations={filteredLocations} names={hi} />
   </div>
 
