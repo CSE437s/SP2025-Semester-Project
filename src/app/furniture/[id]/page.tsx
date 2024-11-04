@@ -46,6 +46,7 @@ const FurnitureDescriptionPage = () => {
 
   useEffect(() => {
     if (id) {
+      console.log('id', id)
       const fetchFurnitureItem = async () => {
         try {
           const response = await fetch(`http://localhost:5001/api/furniture/${id}`);
