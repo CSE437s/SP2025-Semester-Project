@@ -147,16 +147,16 @@ console.log(user_id);
 
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { price, description, condition, colors, location } = req.body;
-
+  const { price, description, condition, colors, location, pics } = req.body;
+  const bufferPics = pics ? pics.map(pic => Buffer.from(pic, 'base64')) : [];
   try {
     const colorsArray = colors ? JSON.stringify(colors) : null;
 
     const result = await pool.query(
       `UPDATE public."furniture_listing"
-       SET price = $1, description = $2, condition = $3, colors = $4, location = $5
-       WHERE id = $6 RETURNING *`,
-      [price, description, condition, colorsArray, location, id]
+       SET price = $1, description = $2, condition = $3, colors = $4, location = $5, pics = $6
+       WHERE id = $7 RETURNING *`,
+      [price, description, condition, colorsArray, location, bufferPics, id]
     );
 
     if (result.rowCount === 0) {

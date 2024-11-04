@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../../../db'); 
+const { buffer } = require('stream/consumers');
 
 
 
@@ -101,15 +102,16 @@ router.post('/upload', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { description, price, location, availability, bedrooms, bathrooms, amenities, policies } = req.body;
+  const { description, price, location, availability, bedrooms, bathrooms, amenities, policies, pics } = req.body;
+  const bufferPics = pics ? pics.map(pic => Buffer.from(pic, 'base64')) : [];
 
   try {
     const result = await pool.query(
       `UPDATE public."apartment_listing"
        SET description = $1, price = $2, location = $3, availability = $4, 
-           bedrooms = $5, bathrooms = $6, amenities = $7, policies = $8
-       WHERE id = $9 RETURNING *`,
-      [description, price, location, availability, bedrooms, bathrooms, amenities, policies, id]
+           bedrooms = $5, bathrooms = $6, amenities = $7, policies = $8, pics = $9
+       WHERE id = $10 RETURNING *`,
+      [description, price, location, availability, bedrooms, bathrooms, amenities, policies, bufferPics, id]
     );
 
     if (result.rowCount === 0) {

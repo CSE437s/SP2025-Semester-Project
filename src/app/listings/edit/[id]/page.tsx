@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import CardMedia from '@mui/material/CardMedia';
 import { Box, TextField, InputLabel, OutlinedInput, InputAdornment, Button, FormControl, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
 
@@ -11,7 +12,10 @@ export default function EditApartmentListing() {
   const { id } = useParams();  
   const router = useRouter();
   const [loading, setLoading] = useState(true); 
-
+  const [fileNames, setFileNames] = React.useState<string[]>([]);
+  const [originalPics, setOriginalPics] = useState<string[]>([]);
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formik = useFormik({
     initialValues: {
       price: '',
@@ -35,10 +39,15 @@ export default function EditApartmentListing() {
     }),
     onSubmit: async (values) => {
       try {
+        const byteArrays = await convertFilesToByteArray();
+        const payload = {
+          ...values,
+          pics: byteArrays
+        };
         const response = await fetch(`http://localhost:5001/api/apartment/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
+          body: JSON.stringify(payload),
         });
 
         if (response.ok) {
@@ -67,7 +76,11 @@ export default function EditApartmentListing() {
             bathrooms: data.bathrooms,
             amenities: data.amenities,
             policies: data.policies,
+
           });
+          setOriginalPics(data.pics);
+          setImagePreview(data.pics[0]);
+          
         } else {
           console.error("Failed to fetch listing data");
         }
@@ -80,6 +93,40 @@ export default function EditApartmentListing() {
 
     fetchListing();
   }, [id]);
+
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const selectedFiles = Array.from(event.target.files);
+      setFiles(selectedFiles);
+      setFileNames(selectedFiles.map((file) => file.name));
+      
+     
+      const previewUrl = URL.createObjectURL(selectedFiles[0]);
+      setImagePreview(previewUrl);
+
+      return () => URL.revokeObjectURL(previewUrl);
+    }
+  };
+
+  const convertFilesToByteArray = async () => {
+    const byteArrays = files.length > 0
+      ? await Promise.all(
+          files.map(file => {
+            return new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const byteString = reader.result as string;
+                resolve(byteString.split(',')[1]);
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          })
+        )
+      : originalPics.map(pic => pic.split(',')[1]);; 
+    return byteArrays;
+  };
 
   if (loading) return <CircularProgress />;
 
@@ -169,6 +216,23 @@ export default function EditApartmentListing() {
         error={formik.touched.policies && Boolean(formik.errors.policies)}
         helperText={formik.touched.policies && formik.errors.policies}
       />
+      {imagePreview && (
+        <CardMedia
+          component="img"
+          className="h-56 object-cover w-[400px] border-b border-gray-300 "
+          image={imagePreview}
+          alt="Apartment preview"
+        />
+      )}
+      <Button variant="contained" component="label">
+        {imagePreview ? `Change Image` : 'Upload Image'}
+        <input
+          type="file"
+          hidden
+          onChange={handleFileChange}
+          multiple
+        />
+      </Button>
       <Button type="submit" variant="contained">Save Changes</Button>
     </Box>
   );
