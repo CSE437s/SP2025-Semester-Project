@@ -6,6 +6,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FurnitureCard from '../components/furniture-card';
 import Link from 'next/link';
+import { ApartmentCard } from '../components/apartment-card';
 
 
 type UserProfile = {
@@ -21,10 +22,20 @@ type FurnitureListing = {
   pics: string[];
 };
 
+type ApartmentListing = {
+  id: number;
+  description: string;
+  price: number;
+  pics: string[];
+  location: string;
+};
+
+
 const ProfileContent = () => {
   const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [listings, setListings] = useState<FurnitureListing[]>([]);
+  const [apartmentListings, setApartmentListings] = useState<ApartmentListing[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,6 +50,7 @@ const ProfileContent = () => {
 
     fetchProfile();
     fetchListings();
+    fetchApartmentListings();
   }, [session]);
 
   async function fetchProfile() {
@@ -84,6 +96,19 @@ const ProfileContent = () => {
     }
   }
 
+  async function fetchApartmentListings() {
+    const profile_id = session?.user?.id;
+    try {
+      const response = await fetch(`http://localhost:5001/api/apartment?user_id=${profile_id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setApartmentListings(data);
+      }
+    } catch (error) {
+      console.error("Error fetching apartment listings", error);
+    }
+  }
+
   if (!session || !session.user) {
     return <Typography variant="h6">You must be logged in to view your profile.</Typography>;
   }
@@ -107,17 +132,34 @@ const ProfileContent = () => {
         <Typography variant="h6" sx={{ mt: 2 }}>Bio:</Typography>
         <Typography>{profile?.bio || 'Not provided'}</Typography>
       </Box>
-      <Typography variant="h5" sx={{ mt: 4 }}>Your Listings</Typography>
+      <Typography variant="h5" sx={{ mt: 4 }}>Your Furniture Listings</Typography>
       <div style={{ flexGrow: 1 }}>
         <Grid container spacing={4}>
           {listings.map((item) => (
             <Grid item key={item.id} xs={12} sm={6} md={4}>
-                <FurnitureCard
-                  title={item.description}
-                  price={`$${item.price}`}
-                  imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
-                  linkDestination={`/furniture/edit/${item.id}`}
-                />
+              <FurnitureCard
+                title={item.description}
+                price={`$${item.price}`}
+                imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
+                linkDestination={`/furniture/edit/${item.id}`}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      </div>
+
+      <Typography variant="h5" sx={{ mt: 4 }}>Your Apartment Listings</Typography>
+      <div style={{ flexGrow: 1 }}>
+        <Grid container spacing={4}>
+          {apartmentListings.map((item) => (
+            <Grid item key={item.id} xs={12} sm={6} md={4}>
+              <ApartmentCard
+                title={item.description}
+                address={item.location}
+                price={`$${item.price}`}
+                imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
+                linkDestination={`/listings/edit/${item.id}`}
+              />
             </Grid>
           ))}
         </Grid>

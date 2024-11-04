@@ -10,12 +10,12 @@ interface ApartmentCardProps {
   address: string;
   price: string;
   imageUrl: string;
-  id: number;
+  linkDestination: string;
 }
 
-export const ApartmentCard = ({ title, address, price, imageUrl, id }: ApartmentCardProps) => {
+export const ApartmentCard = ({ title, address, price, imageUrl, linkDestination }: ApartmentCardProps) => {
   return (
-    <Link href={`/listings/${id}`} passHref>
+    <Link href={linkDestination} passHref>
     <Card sx={{ maxWidth: 280, borderRadius: 2, height: '400px', boxShadow: 3 }}>
     <CardMedia
       component="img"
