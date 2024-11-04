@@ -149,6 +149,14 @@ const ApartmentDescriptionPage = () => {
             Location Unknown
           </Typography>
         )}
+
+<Button 
+  variant="contained" 
+  color="primary" 
+  onClick={() => router.push(`../profile?userId=${apartmentItem.user_id}`)}
+>
+  View Profile
+</Button>
          </Grid>
          <Button 
   variant="contained" 
@@ -174,6 +182,7 @@ const ApartmentDescriptionPage = () => {
           Back to Listings
         </Button>
       </Box>
+
     </Box>
   );
 };

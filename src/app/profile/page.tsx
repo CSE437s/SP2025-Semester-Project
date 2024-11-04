@@ -5,6 +5,7 @@ import { Container, Typography, Box, CircularProgress } from '@mui/material';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+
 type UserProfile = {
   email: string;
   name: string | null;
@@ -18,6 +19,7 @@ const ProfileContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
+
 
   useEffect(() => {
     if (!session || !session.user) {
@@ -40,6 +42,7 @@ const ProfileContent = () => {
           setProfile(data);
         } else {
           console.error("Failed to fetch profile data");
+
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -47,7 +50,6 @@ const ProfileContent = () => {
         setLoading(false);
       }
     }
-
     fetchProfile();
   }, [session]);
 
