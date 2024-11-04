@@ -15,7 +15,7 @@ interface FurnitureCardProps {
 const FurnitureCard = ({ title, price, imageUrl, id }: FurnitureCardProps) => {
   return (
     <Link href={`/furniture/${id}`} passHref>
-      <Card className="w-full sm:w-52 md:w-60 lg:w-72  rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
+      <Card className="w-full sm:w-52 md:w-60 lg:w-72  border border-gray-300 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
         <CardMedia 
           component="img" 
           className="h-52 w-full object-cover border-b border-gray-300" 
