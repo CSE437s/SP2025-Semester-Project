@@ -139,7 +139,6 @@ const ApartmentDescriptionPage = () => {
               <Typography variant="body1" color="text.secondary">
                 Rating: {apartmentItem.rating}
               </Typography>
-              <Grid item xs={8}>
             {locations.length > 0 ? (
           <Box sx={{  height: '200px', marginTop: '10px' }}>
             <Maps locations={locations} names={address} />
@@ -151,14 +150,6 @@ const ApartmentDescriptionPage = () => {
         )}
 
 <Button 
-  variant="contained" 
-  color="primary" 
-  onClick={() => router.push(`../profile?userId=${apartmentItem.user_id}`)}
->
-  View Profile
-</Button>
-         </Grid>
-         <Button 
   variant="contained" 
   color="primary" 
   onClick={() => router.push(`../profile?userId=${apartmentItem.user_id}`)}

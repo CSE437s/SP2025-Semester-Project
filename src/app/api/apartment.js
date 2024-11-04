@@ -6,13 +6,21 @@ const pool = require('../../../db');
 
 // Endpoint to fetch all apartments
 router.get('/', async (req, res) => {
-  try {
-    const result = await pool.query(
+  const { user_id } = req.query;
 
-      `SELECT al.*, bu.rating
-       FROM public.apartment_listing al 
-       JOIN public."business_user" bu ON bu.user_id = al.user_id`
-    );
+  try {
+    const query = user_id
+      ? `SELECT al.*, bu.rating 
+         FROM public."apartment_listing" al 
+         JOIN public."business_user" bu 
+         ON bu.user_id = al."user_id"
+         WHERE al."user_id" = $1;`
+      : `SELECT al.*, bu.rating 
+         FROM public."apartment_listing" al 
+         JOIN public."business_user" bu 
+         ON bu.user_id = al."user_id";`;
+
+    const result = await pool.query(query, user_id ? [user_id] : []);
 
     const apartments = result.rows.map(apartment => ({
       ...apartment,
@@ -90,4 +98,29 @@ router.post('/upload', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { description, price, location, availability, bedrooms, bathrooms, amenities, policies } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE public."apartment_listing"
+       SET description = $1, price = $2, location = $3, availability = $4, 
+           bedrooms = $5, bathrooms = $6, amenities = $7, policies = $8
+       WHERE id = $9 RETURNING *`,
+      [description, price, location, availability, bedrooms, bathrooms, amenities, policies, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Apartment listing not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating apartment listing:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;
