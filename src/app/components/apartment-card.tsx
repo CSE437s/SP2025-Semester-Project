@@ -16,27 +16,27 @@ interface ApartmentCardProps {
 export const ApartmentCard = ({ title, address, price, imageUrl, id }: ApartmentCardProps) => {
   return (
     <Link href={`/listings/${id}`} passHref>
-    <Card sx={{ maxWidth: 280, borderRadius: 2, height: '400px', boxShadow: 3 }}>
-    <CardMedia
-      component="img"
-      sx={{ height: 180, objectFit: 'cover' }}
-      image={imageUrl}
-      alt={title}
-    />
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          {title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {address}
-        </Typography>
-        <Box mt={2}>
-          <Typography variant="h6" color="primary">
-            {price}
+      <Card className="w-full sm:w-52 md:w-60 lg:w-72 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
+        <CardMedia
+          component="img"
+          className="h-56 w-full object-cover border-b border-gray-300"
+          image={imageUrl}
+          alt={title}
+        />
+        <CardContent className="flex flex-col gap-0.5 px-4 py-2">
+          <Typography gutterBottom variant="h5" component="div" className="text-lg p-0 m-0 font-semibold text-left">
+            {title}
           </Typography>
-        </Box>
-      </CardContent>
-    </Card>
+          <Typography variant="body2" color="text.secondary" className="text-left text-gray-600">
+            {address}
+          </Typography>
+          <Box className="text-left mt-1">
+            <Typography variant="h6" color="primary" className="text-blue-800 text-lg p-0 m-0 font-medium">
+              {price}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
     </Link>
   );
 };
