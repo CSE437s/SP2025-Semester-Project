@@ -162,10 +162,11 @@ const Listings = () => {
               address={item.location}
               price={`$${item.price}`}
               imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
-              id={item.id}
+              linkDestination={`/listings/${item.id}`}
             />
           </div>
         ))}
+
       </div>
     </div>
   </div>

@@ -93,7 +93,7 @@ const FurniturePage = () => {
               title={item.description} 
               price={`$${item.price}`}
               imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
-              id={item.id}
+              linkDestination={`/furniture/${item.id}`}
             />
           </Grid>
         ))}
