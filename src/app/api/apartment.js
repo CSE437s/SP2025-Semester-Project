@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
 
-      `SELECT al.*, bu.rating 
+      `SELECT al.*, bu.rating
        FROM public.apartment_listing al 
        JOIN public."business_user" bu ON bu.user_id = al.user_id`
     );

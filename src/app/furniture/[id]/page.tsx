@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Maps from '../../components/map-card';
 import { getCoordinatesOfAddress } from '../../utils'; 
+import { useSession } from 'next-auth/react';
 
 interface ColorData {
   colors: string[] | null;
@@ -36,6 +37,7 @@ const FurnitureDescriptionPage = () => {
   const id = params['id'];
   const [locations, setLocations] = useState<Location[]>([]);
   const address = [''];
+  const { data: session, status } = useSession();
   
 
   const [furnitureItem, setFurnitureItem] = useState<FurnitureItem | null>(null);
@@ -82,6 +84,19 @@ const FurnitureDescriptionPage = () => {
   const colorList = Array.isArray(furnitureItem.colors) 
   ? furnitureItem.colors.join(', ') 
   : 'None';
+
+
+
+  const handleContactLister = () => {
+    if (status === 'unauthenticated') {
+      const res = confirm("You must be logged in to contact the lister. Do you want to log in or sign up?");
+      if (res) {
+        router.push('/login'); 
+      }
+    } else {
+      router.push(`/messages?recipientId=${furnitureItem?.user_id}&sellerId=${session?.user?.id}`);
+    }
+  };
 
   return (
     <Box sx={{ padding: '20px', maxWidth: '1200px', margin: '20px auto' }}>
@@ -157,6 +172,14 @@ const FurnitureDescriptionPage = () => {
 >
   View Profile
 </Button>
+<Button 
+              variant="contained" 
+              color="secondary" 
+              onClick={handleContactLister}
+              sx={{ marginLeft: '10px' }}
+            >
+              Contact Lister
+            </Button>
             </Grid>
           </Grid>
 
