@@ -18,7 +18,7 @@ const ProfileContent = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
+  let userId = searchParams.get("userId");
 
 
   useEffect(() => {
@@ -29,11 +29,13 @@ const ProfileContent = () => {
 
     async function fetchProfile() {
       let profile_id;
-      if (session) {
-        profile_id = session.user.id;
-      } else {
+      if(userId){
         profile_id = userId;
       }
+      else if (session){
+        profile_id = session.user.id;
+      }
+
 
       try {
         const response = await fetch(`/api/user/profile?id=${profile_id}`);
@@ -64,8 +66,8 @@ const ProfileContent = () => {
   return (
     <Container maxWidth="sm" sx={{ mt: 5 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Your Profile
-      </Typography>
+    {userId ? 'Seller Profile' : 'Your Profile'}
+  </Typography>
       <Box sx={{ mt: 3 }}>
         <Typography variant="h6">Email:</Typography>
         <Typography>{profile?.email || 'Not available'}</Typography>
