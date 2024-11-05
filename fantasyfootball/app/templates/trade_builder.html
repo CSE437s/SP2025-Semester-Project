@@ -35,9 +35,23 @@
                     <div class="player-info-container">
                         <select name="your_players" class="your_players" onchange="showInfoIcon(this)">
                             {% for player in team1_roster %}
-                                <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
-                            {% endfor %}
-                        </select>
+                                <option value="{{ player[0] }}">{{ player.Player }} ({{ player.Pos }} - {{ player.team_abb }})</option>
+                            <a href="#" class="info-icon" 
+                            data-player-name="{{ player.Player }}" 
+                            data-player-pos="{{ player.Pos }}"
+                            data-player-headshot="{{ player.img }}" 
+                            data-player-bye="{{ player.bye }}" 
+                            data-player-ranking="{{ player.previous_performance }}" 
+                            data-player-status="{{ player.status }}" 
+                            data-player-injury="{{ player.injury }}" 
+                            data-player-team="{{ player.team_abb }}"
+                            style="margin-left: 5px;">
+                                <i class="fas fa-info-circle"></i> <!-- Font Awesome info icon -->
+                            </a>
+                        
+                        {% endfor %}
+                    </select>
+        
                         <a href="#" class="info-icon" data-player-name="" style="margin-left: 5px; display: none;">
                             <i class="fas fa-info-circle"></i>
                         </a>
@@ -55,13 +69,23 @@
                     <div class="player-info-container">
                         <select name="target_players" class="target_players" onchange="showInfoIcon(this)">
                             {% for player in team2_roster %}
-                                <option value="{{ player[0] }}">{{ player[0] }} ({{ player[1] }} - Rank: {{ player[2] }})</option>
-                            {% endfor %}
-                        </select>
-                        <a href="#" class="info-icon" data-player-name="" style="margin-left: 5px; display: none;">
-                            <i class="fas fa-info-circle"></i>
-                        </a>
-                    </div>
+                            <option value="{{ player[0] }}">{{ player.Player }} ({{ player.Pos }} - {{ player.team_abb }})</option>
+                            <a href="#" class="info-icon" 
+                            data-player-name="{{ player.Player }}" 
+                            data-player-pos="{{ player.Pos }}"
+                            data-player-headshot="{{ player.img }}" 
+                            data-player-bye="{{ player.bye }}" 
+                            data-player-ranking="{{ player.previous_performance }}" 
+                            data-player-status="{{ player.status }}" 
+                            data-player-injury="{{ player.injury }}" 
+                            data-player-team="{{ player.team_abb }}"
+                            style="margin-left: 5px;">
+                                <i class="fas fa-info-circle"></i> <!-- Font Awesome info icon -->
+                            </a>
+                        
+                        {% endfor %}
+                    </select>
+                        </div>
                     <button type="button" class="removePlayerButton" onclick="removePlayer(this)">Remove Player</button>
                 </div>
             </div>
@@ -92,25 +116,30 @@
 <script>
     $(document).ready(function() {
         // Delegate click events for dynamically added info icons
-        $(document).on('click', '.info-icon', function(event) {
-            event.preventDefault();
-            const playerName = $(this).data('player-name');
-            
-            // Update the dashboard with player-specific data
-            $('#dashboardPlayerName').text(playerName);
-            $('#dashboardPlayerPosition').text("Position: Loading...");
-            $('#recentPerformance').html("<li>Loading recent stats...</li>");
-            $('#projectedPoints').text("Calculating...");
-            $('#matchupAnalysis').text("Analyzing...");
-            $('#playerDashboard').show();
+        $('.info-icon').on('click', function(event) {
+            event.preventDefault();  // Prevent default link behavior
 
-            // Mock data fetch (replace this with actual data fetch if needed)
-            setTimeout(function() {
-                $('#dashboardPlayerPosition').text("Position data pull for " + playerName);
-                $('#recentPerformance').html("<li>Recent performance analysis for " + playerName + "</li>");
-                $('#projectedPoints').text("Upcoming projection for " + playerName);
-                $('#matchupAnalysis').text("Some special analysis for " + playerName);
-            }, 500);
+            // Populate the dashboard with player name and placeholder data
+            const playerName = $(this).data('player-name');
+            const playerPos = $(this).data('player-pos');
+            const playerHeadshot = $(this).data('player-headshot');
+            const playerTeam = $(this).data('player-team');
+            const playerBye = $(this).data('player-bye');
+            const playerRanking = $(this).data('player-ranking');
+            const playerStatus = $(this).data('player-status');
+            const playerInjury = $(this).data('player-injury');
+
+            // Populate the dashboard with player data
+            document.getElementById("dashboardPlayerName").innerText = playerName;
+            document.getElementById("dashboardPlayerPosition").innerText = playerPos;
+            document.getElementById("playerHeadshot").src = playerHeadshot;
+            document.getElementById("playerTeam").innerText = playerTeam;
+            document.getElementById("byeWeek").innerText = playerBye;
+            document.getElementById("playerRanking").innerText = playerRanking;
+            document.getElementById("injury").innerText = playerStatus + ": " + playerInjury;
+
+            // Display the modal
+            $('#playerDashboard').show();
         });
 
         // Add player selection dropdowns dynamically for Team 1

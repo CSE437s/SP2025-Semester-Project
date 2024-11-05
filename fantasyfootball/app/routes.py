@@ -78,7 +78,7 @@ def home():
         yahoo_consumer_secret=os.getenv("YAHOO_CLIENT_SECRET"),
         env_file_location=Path(""),
     )
-    curr_user_team = query.get_current_user()._extracted_data["guid"]
+    # curr_user_team = query.get_current_user()._extracted_data["guid"]
     leagues = query.get_user_leagues_by_game_key(449)
 
     for league in leagues:
@@ -99,8 +99,8 @@ def home():
     
         player_team_data = []
         league_teams = query.get_league_teams()
-        rosters = []
-        player_team_data = []
+        # all_players = query.get_league_players()
+        player_names = set()
         for team in league_teams:
             team_info = query.get_team_info(team.team_id)._extracted_data
             team_roster = team_info["roster"]
@@ -121,8 +121,38 @@ def home():
                         "player_key": player.player_key,
                         "previous_week": player_stats.player_points.week,
                         "previous_performance": player_stats.player_points.total,
+                        "games_played": player_stats.player_stats.stats[0].value,
+                        "total_points": player_stats.player_points.total,
+                        "ppg": (player_stats.player_points.total / player_stats.player_stats.stats[0].value 
+                                if player_stats.player_stats.stats[0].value != 0 else 0)
+
                     }
                 )
+                # player_names.add(player.name.full)
+
+        # for player in all_players:
+        #     if player.name.full not in player_names:
+        #         player_team_data.append(
+        #             {
+        #             "player_name": player.name.full,
+        #             "team_name": "N/A",
+        #             "primary_position": player.primary_position,
+        #             "bye": player.bye,
+        #             "team_abb": player.editorial_team_abbr,
+        #             "image": player.image_url,
+        #             "status": player.status,
+        #             "injury": player.injury_note,
+        #             "player_key": player.player_key,
+        #             "previous_week": "N/A",
+        #             "previous_performance": "N/A",
+        #             "games_played": "N/A",
+        #             "total_points": "N/A",
+        #             "ppg": "N/A"
+
+        #         }
+        #     )
+
+        
 
         # Mahomes
         # stat ID 4 - passing yds
@@ -139,10 +169,13 @@ def home():
         # stat ID 18 - fumble lost
         # stat ID 78 - targets
 
-        
 
-        
-        # players = query.get_league_players()
+#         ALTER TABLE player_data
+# ADD COLUMN games_played INT DEFAULT NULL,
+# ADD COLUMN total_points DECIMAL(5, 2) DEFAULT NULL,
+# ADD COLUMN ppg DECIMAL(5, 2) DEFAULT NULL;
+
+
 
         # print(players)
 
@@ -186,7 +219,7 @@ def home():
         # Save the DataFrame to CSV
         df.to_csv("data/player_team_data.csv", index=False)
 
-        # update_ownership()
+        update_ownership()
 
         # Pass team name and players to the template
         return render_template(
@@ -228,20 +261,30 @@ def update_ownership():
             key = row["player_key"]
             previous_week = row["previous_week"]
             previous_performance = row["previous_performance"]
+            games_played = row["games_played"]
+            total_points = row["total_points"]
+            ppg = row["ppg"]
             
 
 
             # Check if the player is in the database
             cursor.execute(
-                'SELECT COUNT(*) FROM "seasonstats" WHERE "Player" = %s', (player_name,)
+                'SELECT COUNT(*) FROM "player_data" WHERE "player_name" = %s', (player_name,)
             )
             exists = cursor.fetchone()[0]
 
             if exists > 0:
-                # Update the ownership status in the database
+                # Update all relevant fields for the player
                 cursor.execute(
-                    'UPDATE "seasonstats" SET "fantasy_owner" = %s WHERE "Player" = %s',
-                    (team_name, player_name),
+                    '''UPDATE "player_data"
+                    SET "team_name" = %s, "primary_position" = %s, "bye" = %s, 
+                        "team_abb" = %s, "image" = %s, "status" = %s, "injury" = %s, 
+                        "player_key" = %s, "previous_week" = %s, 
+                        "previous_performance" = %s, "games_played" = %s, 
+                        "total_points" = %s, "ppg" = %s
+                    WHERE "player_name" = %s''',
+                    (team_name, primary_position, bye, team_abb, image, status, injury, key,
+                    previous_week, previous_performance, games_played, total_points, ppg, player_name)
                 )
 
         # Commit the transaction
@@ -274,7 +317,7 @@ def waiver_wire():
         if position_filter:
             cursor.execute(
                 'SELECT player_name, primary_position, image, previous_performance, team_name, bye, status, injury '
-                'FROM players '
+                'FROM player_data'
                 'WHERE position = %s '
                 'LIMIT %s OFFSET %s',
                 (position_filter, per_page, (page - 1) * per_page)
@@ -282,7 +325,7 @@ def waiver_wire():
         else:
             cursor.execute(
                 'SELECT player_name, primary_position, image, previous_performance, team_name, bye, status, injury '
-                'FROM players '
+                'FROM player_data'
                 'LIMIT %s OFFSET %s',
                 (per_page, (page - 1) * per_page)
             )
@@ -330,32 +373,33 @@ def waiver_wire():
 
 def analyze_player(player):
     if player["Pos"] in ["QB", "TE"]:
-        if player["Rankbypos"] == 1:
+        if player["ppg"] >= 20:
             return "A+: best at Position!"
-        elif 2 <= player["Rankbypos"] <= 5:
+        elif 15 <= player["ppg"] < 20:
             return "A"
-        elif 6 <= player["Rankbypos"] <= 10:
+        elif 10 <= player["ppg"] < 15:
             return "B"
-        elif 11 <= player["Rankbypos"] <= 15:
+        elif 5 <= player["ppg"] < 10:
             return "C"
-        elif 16 <= player["Rankbypos"] <= 20:
+        elif 2 <= player["ppg"] < 5:
             return "D"
         else:
             return "F"
     elif player["Pos"] in ["WR", "RB"]:
-        if player["Rankbypos"] == 1:
+        if player["ppg"] >= 20:
             return "A+"
-        elif 2 <= player["Rankbypos"] <= 5:
+        elif 15 <= player["ppg"] < 20:
             return "A"
-        elif 6 <= player["Rankbypos"] <= 10:
+        elif 10 <= player["ppg"] < 15:
             return "B"
-        elif 11 <= player["Rankbypos"] <= 15:
+        elif 5 <= player["ppg"] < 10:
             return "C"
-        elif 16 <= player["Rankbypos"] <= 20:
+        elif 2 <= player["ppg"] < 5:
             return "D"
         else:
             return "F"
     return "N/A"
+
 
 
 def calculate_consistency(player):
@@ -421,7 +465,7 @@ def team_analyzer():
     try:
         connection = get_connection()
         cursor = connection.cursor()
-        cursor.execute('SELECT DISTINCT "fantasy_owner" FROM "seasonstats"')
+        cursor.execute('SELECT DISTINCT "team_name" FROM "player_data"')
         all_teams = cursor.fetchall()
         cursor.close()
         release_connection(connection)
@@ -434,7 +478,7 @@ def team_analyzer():
             selected_team = request.form.get('team')
             connection = get_connection()
             cursor = connection.cursor()
-            cursor.execute('SELECT "Player", "Pos", "Rankbypos", "WK1Pts", "WK2Pts", "WK3Pts", "WK4Pts", "WK5Pts", "WK6Pts" FROM "seasonstats" WHERE "fantasy_owner" = %s', (selected_team,))
+            cursor.execute('SELECT "player_name", "primary_position", "image", "previous_performance", "bye", "status", "injury", "previous_week", "ppg", "total_points","team_abb" FROM "player_data" WHERE "team_name" = %s', (selected_team,))
             team_players = cursor.fetchall()
             cursor.close()
             release_connection(connection)
@@ -443,16 +487,19 @@ def team_analyzer():
                 player_data = {
                     'Player': player[0],
                     'Pos': player[1],
-                    'Rankbypos': player[2],
-                    'WK1Pts': player[3],
-                    'WK2Pts': player[4],
-                    'WK3Pts': player[5],
-                    'WK4Pts': player[6],
-                    'WK5Pts': player[7],
-                    'WK6Pts': player[8],
+                    'img': player[2],
+                    'previous_performance': player[3],
+                    'bye': player[4],
+                    'status': player[5],
+                    'injury': player[6],
+                    'previous_week': player[7],
+                    'ppg': player[8],
+                    'total_points': player[9],
+                    'team_abb': player[10]
                 }
                 player_data['grade'] = analyze_player(player_data)
-                total_points, std_dev = calculate_consistency(player_data)
+                total_points, std_dev = None,None
+                # calculate_consistency(player_data)
                 qb = topQB(player_data)
                 rbs = topRBs(player_data)
                 wrs = topWRs(player_data)
@@ -477,7 +524,7 @@ def trade_builder():
     cursor = connection.cursor()
 
     # Fetch all teams
-    cursor.execute('SELECT DISTINCT "fantasy_owner" FROM "seasonstats"')
+    cursor.execute('SELECT DISTINCT "team_name" FROM "player_data"')
     all_teams = cursor.fetchall()
     cursor.close()
     release_connection(connection)
@@ -486,6 +533,8 @@ def trade_builder():
 
     team1_roster = []
     team2_roster = []
+    team1_roster_info = []
+    team2_roster_info = []
     trade_feedback = None
 
     if request.method == "POST":
@@ -498,14 +547,14 @@ def trade_builder():
 
             # Fetch team 1 roster
             cursor.execute(
-                'SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" WHERE "fantasy_owner" = %s',
+                'SELECT "player_name", "primary_position", "image", "previous_performance", "team_name", "bye", "status", "injury", "player_key", "previous_week", "ppg", "total_points", "team_abb" FROM "player_data" WHERE "team_name" = %s',
                 (team1,),
             )
-            team1_roster = cursor.fetchall()
+            team1_roster = cursor.fetchall()            
 
             # Fetch team 2 roster
             cursor.execute(
-                'SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" WHERE "fantasy_owner" = %s',
+                'SELECT "player_name", "primary_position", "image", "previous_performance", "team_name", "bye", "status", "injury", "player_key", "previous_week", "ppg", "total_points","team_abb" FROM "player_data" WHERE "team_name" = %s',
                 (team2,),
             )
             team2_roster = cursor.fetchall()
@@ -513,10 +562,48 @@ def trade_builder():
             cursor.close()
             release_connection(connection)
 
+            for player in team1_roster:
+                team1_info = {
+                    'Player': player[0],
+                    'Pos': player[1],
+                    'img': player[2],
+                    'previous_performance': player[3],
+                    'bye': player[4],
+                    'status': player[5],
+                    'injury': player[6],
+                    'previous_week': player[7],
+                    'ppg': player[8],
+                    'total_points': player[9],
+                    'team_abb': player[10]
+                }
+                team1_roster_info.append(team1_info)
+
+            # Process team 2 roster
+            for player in team2_roster:
+                team2_info = {
+                    'Player': player[0],
+                    'Pos': player[1],
+                    'img': player[2],
+                    'previous_performance': player[3],
+                    'bye': player[4],
+                    'status': player[5],
+                    'injury': player[6],
+                    'previous_week': player[7],
+                    'ppg': player[8],
+                    'total_points': player[9],
+                    'team_abb': player[10]
+                }
+                team2_roster_info.append(team2_info)
+
+            # Now set the rosters for rendering
+            team1_roster = team1_roster_info
+            team2_roster = team2_roster_info
+
         if request.form.get("your_player") and request.form.get("target_player"):
             your_player = request.form.get("your_player")
             target_player = request.form.get("target_player")
             trade_feedback = f'You proposed trading {your_player} for {target_player}.'
+
 
 
     return render_template(
