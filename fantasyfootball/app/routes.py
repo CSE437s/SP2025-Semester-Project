@@ -97,65 +97,88 @@ def home():
             env_file_location=Path(""),
         )
     
-        # player_team_data = []
-        # league_teams = query.get_league_teams()
-        # rosters = []
-        # player_team_data = []
-        # for team in league_teams:
-        #     team_info = query.get_team_info(team.team_id)._extracted_data
-        #     team_roster = team_info["roster"]
-        #     for player in team_roster.players:
-        #         player_name = player.name.full
-        #         player_team_data.append(
-        #             {
-        #                 "player_name": player_name,
-        #                 "team_name": team_info["name"],
-        #                 "primary_position": player.primary_position
-        #             }
-        #         )]
+        player_team_data = []
+        league_teams = query.get_league_teams()
+        rosters = []
+        player_team_data = []
+        for team in league_teams:
+            team_info = query.get_team_info(team.team_id)._extracted_data
+            team_roster = team_info["roster"]
+            for player in team_roster.players:
+                key = player.player_key
+                player_stats = query.get_player_stats_by_week(key,chosen_week=9)
+                # hard coded week for now
+                player_team_data.append(
+                    {
+                        "player_name": player.name.full,
+                        "team_name": team_info["name"],
+                        "primary_position": player.primary_position,
+                        "bye": player.bye,
+                        "team_abb": player.editorial_team_abbr,
+                        "image": player.image_url,
+                        "status": player.status,
+                        "injury": player.injury_note,
+                        "player_key": player.player_key,
+                        "previous_week": player_stats.player_points.week,
+                        "previous_performance": player_stats.player_points.total,
+                    }
+                )
 
-        players = query.get_league_players()
+        # Mahomes
+        # stat ID 4 - passing yds
+        # stat ID 5 - passing TDs
+        # stat ID 6 - passing INTs
+        # stat ID 8 - RUSH ATTs
+        # stat ID 9 - rush YDS
+        # stat ID 10 - rush TDs
+        # stat ID 11 - receptions
+        # stat ID 12 - receiving yards
+        # stat ID 13 - receiving TDs
+        # stat ID 15 - return TDs
+        # stat ID 16 - 2pt
+        # stat ID 18 - fumble lost
+        # stat ID 78 - targets
 
-        player_data = []
+        
 
-        for player in players:
-            # Base data for each player
-            print(extract_serializable_data(player.ownership.owner_team_name))
-            print(player.ownership.owner_team_name)
-            player_info = {
-                "player_name": player.name.full,
-                "primary_position": player.primary_position,
-                "owner_name": extract_serializable_data(player.ownership.owner_team_name),
-                "bye": player.bye,
-                "team_abb": player.editorial_team_abbr,
-                "image": player.image_url,
-                "status": player.status,
-                "injury": player.injury_note,
-                "uniform_num": player.uniform_number,
-                "percent_owned": player.percent_owned.value,
-            }
+        
+        # players = query.get_league_players()
 
-            
-            stat_list = player.player_stats.stats
-            if stat_list:
-                for stat in stat_list:
+        # print(players)
 
-                    stat = stat._extracted_data
+
+        # for player in players:
+        #     owner_hopefully = player.ownership._extracted_data
+        #     player_info = {
+        #         "player_name": player.name.full,
+        #         "primary_position": player.primary_position,
+        #         "bye": player.bye,
+        #         "team_abb": player.editorial_team_abbr,
+        #         "image": player.image_url,
+        #         "status": player.status,
+        #         "injury": player.injury_note,
+        #     }
+
+        #     stat_list = player.player_stats.stats
+        #     if stat_list:
+        #         for stat in stat_list:
+
+        #             stat = stat._extracted_data
                     
-                    stat_name = stat.name
-                    stat_value = stat.value
+        #             stat_name = stat.name
+        #             stat_value = stat.value
 
-                    if stat_name and stat_value is not None:
+        #             if stat_name and stat_value is not None:
                         
-                        player_info[stat_name] = stat_value
-                    else:
-                        print(f"Stat data missing for player: {player.name.full}, stat: {stat_name}")
+        #                 player_info[stat_name] = stat_value
+        #             else:
+        #                 print(f"Stat data missing for player: {player.name.full}, stat: {stat_name}")
 
             
-            player_data.append(player_info)
+            # player_team_data.append(player_info)
 
         # Create the DataFrame
-        df = pd.DataFrame(player_data)
+        df = pd.DataFrame(player_team_data)
 
         if not os.path.exists("data"):
             os.makedirs("data")
@@ -195,7 +218,18 @@ def update_ownership():
         # Iterate over the DataFrame and update the database
         for index, row in df.iterrows():
             player_name = row["player_name"]
-            owner = row["team_name"]  # Assuming 'team_name' indicates ownership
+            team_name = row["team_name"]
+            primary_position = row["primary_position"]
+            bye = row["bye"]
+            team_abb = row["team_abb"]
+            image = row["image"]
+            status = row["status"]
+            injury = row["injury"]
+            key = row["player_key"]
+            previous_week = row["previous_week"]
+            previous_performance = row["previous_performance"]
+            
+
 
             # Check if the player is in the database
             cursor.execute(
@@ -207,7 +241,7 @@ def update_ownership():
                 # Update the ownership status in the database
                 cursor.execute(
                     'UPDATE "seasonstats" SET "fantasy_owner" = %s WHERE "Player" = %s',
-                    (owner, player_name),
+                    (team_name, player_name),
                 )
 
         # Commit the transaction
@@ -365,7 +399,7 @@ def topWRs(player_data):
 def topTE(player_data):
     return "Brock Bowers"
 
-def topFLEX(player_data):
+def topFLEX(player_data, rbs, wrs, tes):
     return "Demario Douglas"
 
 def topK(player_data):
@@ -415,7 +449,7 @@ def team_analyzer():
                 rbs = topRBs(player_data)
                 wrs = topWRs(player_data)
                 te = topTE(player_data)
-                flex = topFLEX(player_data)
+                flex = topFLEX(player_data, rbs, wrs, te)
                 k = topK(player_data)
                 dst = topDst(player_data)
 
@@ -423,7 +457,7 @@ def team_analyzer():
                 player_data['std_dev'] = std_dev if std_dev is not None else "N/A"
                 players.append(player_data)
 
-        return render_template('team_analyzer.html', teams=teams, selected_team=selected_team, players=playersl)
+        return render_template('team_analyzer.html', teams=teams, selected_team=selected_team, players=players)
     except Exception as e:
         print(f"Error fetching team analyzer data: {e}")
         return render_template('error.html', error_message=str(e))

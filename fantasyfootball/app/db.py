@@ -28,3 +28,4 @@ def get_connection():
 def release_connection(connection):
     # Return the connection to the pool
     postgreSQL_pool.putconn(connection)
+
