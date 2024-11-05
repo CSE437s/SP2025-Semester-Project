@@ -134,35 +134,47 @@ const ProfileContent = () => {
       </Box>
       <Typography variant="h5" sx={{ mt: 4 }}>Your Furniture Listings</Typography>
       <div style={{ flexGrow: 1 }}>
-        <Grid container spacing={4}>
-          {listings.map((item) => (
-            <Grid item key={item.id} xs={12} sm={6} md={4}>
-              <FurnitureCard
-                title={item.description}
-                price={`$${item.price}`}
-                imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
-                linkDestination={`/furniture/edit/${item.id}`}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {listings.length > 0 ? (
+          <Grid container spacing={4}>
+            {listings.map((item) => (
+              <Grid item key={item.id} xs={12} sm={6} md={4}>
+                <FurnitureCard
+                  title={item.description}
+                  price={`$${item.price}`}
+                  imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
+                  linkDestination={`/furniture/edit/${item.id}`}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            You have no furniture listings.
+          </Typography>
+        )}
       </div>
 
       <Typography variant="h5" sx={{ mt: 4 }}>Your Apartment Listings</Typography>
       <div style={{ flexGrow: 1 }}>
-        <Grid container spacing={4}>
-          {apartmentListings.map((item) => (
-            <Grid item key={item.id} xs={12} sm={6} md={4}>
-              <ApartmentCard
-                title={item.description}
-                address={item.location}
-                price={`$${item.price}`}
-                imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
-                linkDestination={`/listings/edit/${item.id}`}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {apartmentListings.length > 0 ? (
+          <Grid container spacing={4}>
+            {apartmentListings.map((item) => (
+              <Grid item key={item.id} xs={12} sm={6} md={4}>
+                <ApartmentCard
+                  title={item.description}
+                  address={item.location}
+                  price={`$${item.price}`}
+                  imageUrl={item.pics[0] || "https://via.placeholder.com/345x140"}
+                  linkDestination={`/listings/edit/${item.id}`}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            You have no apartment listings.
+          </Typography>
+        )}
       </div>
     </Container>
   );
