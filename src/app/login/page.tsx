@@ -3,7 +3,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Typography, Container, Box, Tabs, Tab, Link } from '@mui/material';
+import { Button, TextField, Typography, Container, Box, Tabs, Tab, Link, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react';
 
@@ -27,6 +27,7 @@ const validationSchema = Yup.object({
 
 const LoginPage = () => {
   const [value, setValue] = React.useState(0); // 0 for Sign In, 1 for Sign Up
+  const [loading, setLoading] = React.useState(false); // Loading state
   const router = useRouter();
   // const { data: session } = useSession(); 
   const formik = useFormik({
@@ -37,6 +38,7 @@ const LoginPage = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
+      setLoading(true);
       if (value === 0) { // Sign In
         const res = await signIn("credentials", {
           email: values.email,
@@ -84,6 +86,7 @@ const LoginPage = () => {
           alert('Error signing up, please try again');
         }
       }
+      setLoading(false);
       formik.resetForm();
     },
   });
@@ -143,8 +146,8 @@ const LoginPage = () => {
               helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
             />
           )}
-          <Button disabled={!formik.isValid || !formik.dirty || (value === 1 && !formik.touched.confirmPassword)} type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            {value === 0 ? 'Sign In' : 'Sign Up'}
+          <Button disabled={loading || !formik.isValid || !formik.dirty || (value === 1 && !formik.touched.confirmPassword)} type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          {loading ? <CircularProgress size={24} /> : value === 0 ? 'Sign In' : 'Sign Up'}
           </Button>
         </form>
       </Box>
