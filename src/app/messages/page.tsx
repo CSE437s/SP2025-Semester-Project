@@ -168,34 +168,41 @@ const MessagesContent = () => {
 
 
   return (
-    <div>
-      <h1>Your Conversations</h1>
-      {conversations.map((conversation) => (
-        <Accordion
-          key={conversation.conversation_partner_id}
-          expanded={selectedConversation === conversation.conversation_partner_id} 
-          onChange={() => setSelectedConversation(
-            selectedConversation === conversation.conversation_partner_id ? null : conversation.conversation_partner_id 
-          )}
+    <div className="p-4 min-h-screen">
+    <h1 className="mb-4 font-semibold text-2xl font-mono text-gray-800">Your Conversations</h1>
+    {conversations.map((conversation) => (
+      <Accordion
+        key={conversation.conversation_partner_id}
+        className="border border-gray-200 shadow-md mb-4 rounded-lg"
+        expanded={selectedConversation === conversation.conversation_partner_id}
+        onChange={() => setSelectedConversation(
+          selectedConversation === conversation.conversation_partner_id ? null : conversation.conversation_partner_id 
+        )}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className="text-gray-600" />}
+          className="px-4 py-2 border-b border-gray-200 bg-gray-100 hover:bg-gray-300 rounded-lg"
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>{conversation.conversation_partner_name}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <div className="message-list">
-              {conversation.messages && conversation.messages.length > 0 ? (
-                conversation.messages.map((msg) => (
-                  <div key={`${msg.sender_id}-${msg.timestamp}`}>
-                    <p>
-                      <strong>{msg.sender_id === session.user.id ? "You" : conversation.conversation_partner_name}:</strong> {msg.message_text}
-                    </p>
-                    <small>{new Date(msg.timestamp).toLocaleString()}</small>
-                  </div>
-                ))
-              ) : (
-                <p>No messages to display</p>
-              )}
-            </div>
+          <Typography className="font-semibold text-gray-700">
+            {conversation.conversation_partner_name}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails className="bg-blue-100 p-4">
+          <div className="message-list space-y-3">
+            {conversation.messages && conversation.messages.length > 0 ? (
+              conversation.messages.map((msg) => (
+                <div key={`${msg.sender_id}-${msg.timestamp}`} className="p-2 rounded-md bg-gray-50 shadow-sm">
+                  <p className="text-gray-800">
+                    <strong className="text-gray-600">{msg.sender_id === session.user.id ? "You" : conversation.conversation_partner_name}:</strong> {msg.message_text}
+                  </p>
+                  <small className="text-gray-500 text-xs">{new Date(msg.timestamp).toLocaleString()}</small>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No messages to display</p>
+            )}
+          </div>
+          <div className="mt-4">
             <TextField
               label="Type a message..."
               value={newMessage}
@@ -203,14 +210,22 @@ const MessagesContent = () => {
               fullWidth
               variant="outlined"
               margin="dense"
+              className="bg-gray-50"
             />
-            <Button onClick={() => handleSendMessage(conversation.conversation_partner_id, conversation.conversation_partner_name)} variant="contained" color="primary">
+            <Button 
+              onClick={() => handleSendMessage(conversation.conversation_partner_id, conversation.conversation_partner_name)} 
+              variant="contained" 
+              color="primary" 
+              className="mt-2 w-full"
+            >
               Send
             </Button>
-          </AccordionDetails>
-        </Accordion>
-      ))}
-    </div>
+          </div>
+        </AccordionDetails>
+      </Accordion>
+    ))}
+  </div>
+  
   );
 };
 
