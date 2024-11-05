@@ -266,21 +266,25 @@ def waiver_wire():
         position_filter = request.args.get('positionFilter', '', type=str)
         per_page = 25  # Number of players per page
 
-        # Get connection from the pool
+         # Get connection from the pool
         connection = get_connection()
         cursor = connection.cursor()
 
         # Modify SQL query based on position filter
         if position_filter:
             cursor.execute(
-                'SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" '
-                'WHERE "fantasy_owner" IS NULL AND "Pos" = %s',
-                (position_filter,)
+                'SELECT player_name, primary_position, image, previous_performance, team_name, bye, status, injury '
+                'FROM players '
+                'WHERE position = %s '
+                'LIMIT %s OFFSET %s',
+                (position_filter, per_page, (page - 1) * per_page)
             )
         else:
             cursor.execute(
-                'SELECT "Player", "Pos", "Rankbypos" FROM "seasonstats" '
-                'WHERE "fantasy_owner" IS NULL'
+                'SELECT player_name, primary_position, image, previous_performance, team_name, bye, status, injury '
+                'FROM players '
+                'LIMIT %s OFFSET %s',
+                (per_page, (page - 1) * per_page)
             )
 
         rows = cursor.fetchall()
@@ -288,13 +292,17 @@ def waiver_wire():
         # Convert rows to dictionary format
         waiver_wire_players = [
             {
-                "name": row[0],
-                "position": row[1],
-                "projection": f"{row[2]}",
+                "player_name": row[0],
+                "primary_position": row[1],
+                "image": row[2],
+                "previous_performance": row[3],
+                "team_name": row[4],
+                "bye": row[5],
+                "status": row[6],
+                "injury": row[7]
             }
             for row in rows
         ]
-
         # Calculate pagination
         total = len(waiver_wire_players)
         total_pages = (total + per_page - 1) // per_page  # Calculate total pages
