@@ -2,12 +2,14 @@ import psycopg2
 from psycopg2 import pool
 import os
 from dotenv import load_dotenv
+from time import sleep
 
 load_dotenv(override=True)
 
 
 # Define your connection pool globally
 try:
+    sleep(1)
     postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(
         1, 20,
         user=os.getenv("POSTGRES_USER", "postgres"),
