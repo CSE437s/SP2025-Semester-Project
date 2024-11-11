@@ -25,7 +25,7 @@ export default function ListingUpload() {
 
   const { data: session, status } = useSession();  
     const router = useRouter();
-
+    const MAX_FILE_SIZE = 65 * 1024;
   const colorItems: any[] = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Black', 'Grey'];
 
   const validationSchema = Yup.object({
