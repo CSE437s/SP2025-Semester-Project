@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useSession } from 'next-auth/react';
 import { Container, Typography, Box, CircularProgress, Grid } from '@mui/material';
 import { useEffect, useState, Suspense } from 'react';
@@ -11,9 +10,9 @@ import { ApartmentCard } from '../components/apartment-card';
 
 
 type UserProfile = {
- email: string;
- name: string | null;
- bio: string | null;
+  email: string;
+  name: string | null;
+  bio: string | null;
 };
 
 type FurnitureListing = {
@@ -37,92 +36,14 @@ const ProfileContent = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [listings, setListings] = useState<FurnitureListing[]>([]);
   const [apartmentListings, setApartmentListings] = useState<ApartmentListing[]>([]);
-  const [listings, setListings] = useState<FurnitureListing[]>([]);
-  const [apartmentListings, setApartmentListings] = useState<ApartmentListing[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  let userId = searchParams.get("userId");
   let userId = searchParams.get("userId");
 
 
   useEffect(() => {
     if (!session || !session.user) {
-      router.push('/furniture');
-      return;
-    }
-
-    fetchProfile();
-    fetchListings();
-    fetchApartmentListings();
-  }, [session]);
-
-  async function fetchProfile() {
-    let profile_id;
-    if(userId){
-      profile_id = userId;
-    }
-    else if (session){
-      profile_id = session.user.id;
-    }
-    try {
-      const response = await fetch(`/api/user/profile?id=${profile_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-      } else {
-        console.error("Failed to fetch profile data");
-
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchListings() {
-    let profile_id;
-    if(userId){
-      profile_id = userId;
-    }
-    else if (session){
-      profile_id = session.user.id;
-    }
-    try {
-      const listingsResponse = await fetch(`http://localhost:5001/api/furniture?user_id=${profile_id}`);
-      if (listingsResponse.ok) {
-        const listingsData = await listingsResponse.json();
-        setListings(listingsData);
-      }
-
-    }
-    catch (error) {
-      console.error("Error fetching listings", error)
-    }
-    finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchApartmentListings() {
-    let profile_id;
-    if(userId){
-      profile_id = userId;
-    }
-    else if (session){
-      profile_id = session.user.id;
-    }
-    try {
-      const response = await fetch(`http://localhost:5001/api/apartment?user_id=${profile_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setApartmentListings(data);
-      }
-    } catch (error) {
-      console.error("Error fetching apartment listings", error);
-    }
-  }
       router.push('/furniture');
       return;
     }
