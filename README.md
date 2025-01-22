@@ -1,4 +1,4 @@
-# SP2025: Group &lt;Group Number&gt; &lt;Project Name&gt;
+# SP2025: Group &lt;1&gt; &lt;Stock Market Dashboard&gt;
 
 Name your repository using the following format:  
 **SP2025_Group_&lt;Group Number&gt;**  
@@ -13,7 +13,8 @@ Name your repository using the following format:
 &lt;Name of your group's TA&gt;
 
 ## Objectives
-&lt;Description of what your project is about, your key functionalities, tech stacks used, etc. &gt;
+&lt;Our project is a stock option dashboard that provides authentication, paper trading, and stock insights using data analytics and machine learning. The frontend is built with Next.js, the backend with FastAPI, and the database uses MongoDB, all hosted on Azure for scalability and reliability. &gt;
+
 
 ## How to Run
 &lt;Instructions for how to run your project. Include the URI to your project at the top if applicable.&gt;
