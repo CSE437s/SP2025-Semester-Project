@@ -13,7 +13,7 @@ Name your repository using the following format:
 &lt;Name of your group's TA&gt;
 
 ## Objectives
-&lt;Our project is a stock option dashboard that provides authentication, paper trading, and stock insights using data analytics and machine learning. The frontend is built with Next.js, the backend with FastAPI, and the database uses MongoDB, all hosted on Azure for scalability and reliability. &gt;
+Our project is a stock option dashboard that provides authentication, paper trading, and stock insights using data analytics and machine learning. The frontend is built with Next.js, the backend with FastAPI, and the database uses MongoDB, all hosted on Azure for scalability and reliability.
 
 
 ## How to Run
