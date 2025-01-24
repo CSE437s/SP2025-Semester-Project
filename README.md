@@ -18,3 +18,16 @@ Our project is a stock option dashboard that provides authentication, paper trad
 
 ## How to Run
 &lt;Instructions for how to run your project. Include the URI to your project at the top if applicable.&gt;
+
+1. Run the frontend:
+-- cd frontend
+-- npm install
+-- npm run dev
+
+2. Run the backend:
+-- cd backend
+-- python -m venv venv
+-- venv\Scripts\activate
+-- pip install -r requirements.txt
+-- uvicorn main:app --reload
+

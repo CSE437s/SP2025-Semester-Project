@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env
+.env.local
+*.env
+
+# Logs
+logs/
+*.log
+*.out
+*.err
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+*.egg-info/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Docker
+docker-compose.override.yml
+*.dockerignore
+*.env.docker
+
+# Build artifacts
+dist/
+build/
+*.tar.gz
+
+# Database
+*.sqlite3
+*.db
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.pycover
