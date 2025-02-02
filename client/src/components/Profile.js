@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import TabsComponent from "./Tabs";
 
 function Profile() {
     const navigate = useNavigate();
@@ -32,7 +33,8 @@ function Profile() {
     }, [navigate]);
 
     return (
-        <div>
+        <div style={{ paddingTop: "64px" }}>
+            <TabsComponent/>
             <h1>User Profile</h1>
         </div>
     );
