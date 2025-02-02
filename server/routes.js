@@ -96,4 +96,9 @@ router.get("/dashboard", authenticateToken, (req, res) => {
     res.json({ message: "Welcome to the dashboard page!", user: req.user });
 });
 
+// Profile Route (protected)
+router.get("/profile", authenticateToken, (req, res) => {
+    res.json({ message: "Welcome to the profile page!", user: req.user });
+});
+
 module.exports = router;

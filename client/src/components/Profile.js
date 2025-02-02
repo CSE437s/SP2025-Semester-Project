@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import TabsComponent from "./Tabs";
 
-function Dashboard() {
+function Profile() {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -17,13 +16,13 @@ function Dashboard() {
                     return;
                 }
 
-                const response = await axios.get("http://localhost:8080/api/dashboard", {
+                const response = await axios.get("http://localhost:8080/api/profile", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
                 console.log(response.data);
             } catch (error) {
-                console.error("Dashboard error:", error);
+                console.error("Profile error:", error);
                 alert("Session expired. Please log in again.");
                 navigate("/login");
             }
@@ -33,11 +32,10 @@ function Dashboard() {
     }, [navigate]);
 
     return (
-        <div style={{ paddingTop: "64px" }}>
-            <TabsComponent/>
-            <h1>Welcome to the Dashboard</h1>
+        <div>
+            <h1>User Profile</h1>
         </div>
     );
 }
 
-export default Dashboard;
+export default Profile;
