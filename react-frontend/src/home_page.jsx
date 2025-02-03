@@ -26,7 +26,7 @@ function home_page() {
       {/* Visual Field Section */}
       <section className="visual-field">
         <h2>Visual Basketball/Soccer Field</h2>
-        <div className="field-placeholder">Field Visualization Coming Soon!</div>
+        <div className="field-placeholder">Visualization Coming Soon!</div>
       </section>
 
       {/* Stats Dashboard Section */}
