@@ -31,12 +31,12 @@ const Sidebar = ({ onManageProfileClick }) => {
 
     return (
         <div style={sidebarStyle}>
-            {/*profile picture*/}
+            
             <div style={profilePictureStyle}></div>
 
             <h2>Hello, {user.name}!</h2>
 
-            {/*manage profile button*/}
+            
             <button style={buttonStyle} onClick={onManageProfileClick}>
                 Manage Your Profile
             </button>
