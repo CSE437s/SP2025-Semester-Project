@@ -1,13 +1,11 @@
 # SP2025: Group &lt;Group Number&gt; &lt;Project Name&gt;
-
-Name your repository using the following format:  
-**SP2025_Group_&lt;Group Number&gt;**  
-(Example: SP2025_Group_9)
+ 
+**SP2025_Group_&lt;Group 3&gt;**  
 
 ## Team Members
 - **&lt;Deyuan Yang&gt;**: &lt;deyuan.y@wustl.edu&gt; ; &lt;Doreenyang&gt;
-- **&lt;Member Name&gt;**: &lt;Email Address&gt; ; &lt;Github ID&gt;
-- **&lt;Member Name&gt;**: &lt;Email Address&gt; ; &lt;Github ID&gt;
+- **&lt;Aman Verma&gt;**: &lt;aman.v@wustl.edu&gt; ; &lt;aman070902&gt;
+- **&lt;Ashutosh Deorukhkar&gt;**: &lt;a.deorukhkar@wustl.edu&gt; ; &lt;Ashutosh-254&gt;
 
 ## TA
 &lt;Name of your group's TA&gt;
