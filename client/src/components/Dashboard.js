@@ -53,18 +53,44 @@ function Dashboard() {
         setProductImage(file);
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        //TODO: Backend
-        console.log({
-            productName,
-            suitableSeason,
-            productDescription,
-            productImage,
-        });
-        alert("Product submitted successfully!");
+        
+        const formData = new FormData();
+        formData.append("productName", productName);
+        formData.append("suitableSeason", suitableSeason);
+        formData.append("productDescription", productDescription);
+        if (productImage) {
+            formData.append("productImage", productImage);
+        }
+      
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "http://localhost:8080/api/submit-product", 
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            
+            alert(response.data.message);
+    
+            
+            setProductName('');
+            setSuitableSeason('');
+            setProductDescription('');
+            setProductImage(null);
+        } catch (error) {
+            console.error("Error submitting product:", error);
+            alert("There was an error submitting your product.");
+        }
     };
-
+    
+    
     return (
         <div style={{ paddingTop: "64px", display: "flex", flexDirection: "row", marginLeft: '15%' }}>
       

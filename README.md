@@ -100,6 +100,22 @@ Ensure the following tools are installed:
 
      );
 
+   CREATE TABLE products (
+
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    product_name VARCHAR(255) NOT NULL,
+
+    suitable_season ENUM('spring', 'summer', 'autumn', 'winter') NOT NULL,
+
+    product_description TEXT NOT NULL,
+
+    product_image VARCHAR(255),
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+
+
      ```
 
    - Exit MySQL:
