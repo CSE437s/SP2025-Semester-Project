@@ -66,7 +66,7 @@ function Dashboard() {
     };
 
     return (
-        <div style={{ paddingTop: "64px", display: "flex", flexDirection: "row" }}>
+        <div style={{ paddingTop: "64px", display: "flex", flexDirection: "row", marginLeft: '15%' }}>
       
             <div style={{ width: "30%", padding: "20px" }}>
                 <h2>Sell Your Product Here</h2>
@@ -135,8 +135,8 @@ function Dashboard() {
                         <div
                             key={season.id}
                             style={{
-                                width: "200px",
-                                margin: "20px 0",  // Add more space between the seasons
+                                width: "300px",
+                                margin: "20px 0",  
                                 cursor: "pointer",
                                 textAlign: "center",
                             }}
@@ -149,7 +149,7 @@ function Dashboard() {
                                     width: "100%",
                                     height: "150px",
                                     objectFit: "cover",
-                                    borderRadius: "8px",
+                                    //borderRadius: "8px",
                                 }}
                             />
                             <h3 style={{ marginTop: "10px", color: "#333" }}>{season.title}</h3>
