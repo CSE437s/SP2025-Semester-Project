@@ -53,20 +53,46 @@ function Dashboard() {
         setProductImage(file);
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        //TODO: Backend
-        console.log({
-            productName,
-            suitableSeason,
-            productDescription,
-            productImage,
-        });
-        alert("Product submitted successfully!");
+        
+        const formData = new FormData();
+        formData.append("productName", productName);
+        formData.append("suitableSeason", suitableSeason);
+        formData.append("productDescription", productDescription);
+        if (productImage) {
+            formData.append("productImage", productImage);
+        }
+      
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                "http://localhost:8080/api/submit-product", 
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            
+            alert(response.data.message);
+    
+            
+            setProductName('');
+            setSuitableSeason('');
+            setProductDescription('');
+            setProductImage(null);
+        } catch (error) {
+            console.error("Error submitting product:", error);
+            alert("There was an error submitting your product.");
+        }
     };
-
+    
+    
     return (
-        <div style={{ paddingTop: "64px", display: "flex", flexDirection: "row" }}>
+        <div style={{ paddingTop: "64px", display: "flex", flexDirection: "row", marginLeft: '15%' }}>
       
             <div style={{ width: "30%", padding: "20px" }}>
                 <h2>Sell Your Product Here</h2>
@@ -135,8 +161,8 @@ function Dashboard() {
                         <div
                             key={season.id}
                             style={{
-                                width: "200px",
-                                margin: "20px 0",  // Add more space between the seasons
+                                width: "300px",
+                                margin: "20px 0",  
                                 cursor: "pointer",
                                 textAlign: "center",
                             }}
@@ -149,7 +175,7 @@ function Dashboard() {
                                     width: "100%",
                                     height: "150px",
                                     objectFit: "cover",
-                                    borderRadius: "8px",
+                                    //borderRadius: "8px",
                                 }}
                             />
                             <h3 style={{ marginTop: "10px", color: "#333" }}>{season.title}</h3>

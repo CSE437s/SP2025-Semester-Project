@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("./config");
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 
 // Middleware to authenticate tokens
 const authenticateToken = (req, res, next) => {
@@ -19,6 +21,18 @@ const authenticateToken = (req, res, next) => {
         return res.status(403).json({ message: "Invalid token." });
     }
 };
+
+//Configure storage for images
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Folder to save images
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Save file with timestamp
+    },
+});
+
+const upload = multer({ storage: storage });
 
 // Register Route
 router.post("/register", async (req, res) => {
@@ -95,6 +109,29 @@ router.post("/login", async (req, res) => {
 router.get("/dashboard", authenticateToken, (req, res) => {
     res.json({ message: "Welcome to the dashboard page!", user: req.user });
 });
+
+//Dashboard submit
+router.post('/submit-product', authenticateToken, upload.single('productImage'), async (req, res) => {
+    const { productName, suitableSeason, productDescription } = req.body;
+    const productImage = req.file ? req.file.path : null; 
+
+    if (!productName || !suitableSeason || !productDescription) {
+        return res.status(400).json({ message: 'All fields are required except the image.' });
+    }
+
+    try {
+        const [result] = await db.promise().query(
+            "INSERT INTO products (product_name, suitable_season, product_description, product_image) VALUES (?, ?, ?, ?)",
+            [productName, suitableSeason, productDescription, productImage]
+        );
+
+        res.status(201).json({ message: 'Product submitted successfully!', productId: result.insertId });
+    } catch (error) {
+        console.error("Error submitting product:", error);
+        res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+});
+
 
 // Profile Route (protected)
 router.get("/profile", authenticateToken, (req, res) => {
