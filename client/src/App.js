@@ -15,7 +15,7 @@ function App() {
                 <Route path="/register" element={<Register />} /> {/* Register Route */}
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path = "/profile" element={<Profile />}/>
-		        <Route path="/products/:season" element={ProductPage} />
+		        <Route path="/products/:season" element={<ProductPage />} />
                 <Route path="*" element={<Login />} /> {/* Default to Login */}
             </Routes>
         </Router>

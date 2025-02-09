@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const db = require("./config");
 const router = express.Router();
 const multer = require('multer');
+const app = express();
 const path = require('path');
 
 // Middleware to authenticate tokens
@@ -21,6 +22,10 @@ const authenticateToken = (req, res, next) => {
         return res.status(403).json({ message: "Invalid token." });
     }
 };
+
+// Serve static files from the 'uploads' directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 //Configure storage for images
 const storage = multer.diskStorage({

@@ -50,7 +50,7 @@ function TabsComponent() {
                             }}
                         >
                             <Tab label="Home" component={Link} to="/dashboard" />
-                            <Tab label="Category" component={Link} to="/category" />
+                            {/* <Tab label="Category" component={Link} to="/category" /> */}
                             <Tab label="Profile" component={Link} to="/profile" />
                             <Tab label="Logout" onClick={handleLogout} />
                         </Tabs>

@@ -3,6 +3,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const mysql = require("mysql2");
+const path = require("path");
+
 
 dotenv.config();
 
@@ -27,6 +29,9 @@ db.connect((err) => {
     }
     console.log("Database connected...");
 });
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
 
 // Import routes
 const routes = require("./routes");
