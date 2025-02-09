@@ -45,7 +45,7 @@ function Dashboard() {
     }, [navigate]);
 
     const handleSeasonClick = (category) => {
-        navigate(`/category/${category}`);
+        navigate(`/products/${category}`);
     };
 
     const handleImageUpload = (event) => {

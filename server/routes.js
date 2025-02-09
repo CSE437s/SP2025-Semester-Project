@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const db = require("./config");
 const router = express.Router();
 const multer = require('multer');
+const app = express();
 const path = require('path');
 
 // Middleware to authenticate tokens
@@ -21,6 +22,10 @@ const authenticateToken = (req, res, next) => {
         return res.status(403).json({ message: "Invalid token." });
     }
 };
+
+// Serve static files from the 'uploads' directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 //Configure storage for images
 const storage = multer.diskStorage({
@@ -131,6 +136,30 @@ router.post('/submit-product', authenticateToken, upload.single('productImage'),
         res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 });
+
+
+
+
+// Fetch Products by Season (protected)
+router.get("/products/:season", authenticateToken, async (req, res) => {
+    const { season } = req.params;
+
+    try {
+        // Query the database to fetch products for the given season
+        const [rows] = await db.promise().query(
+            "SELECT * FROM products WHERE suitable_season = ?",
+            [season]
+        );
+
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Failed to fetch products." });
+    }
+});
+
+
+
 
 
 // Profile Route (protected)

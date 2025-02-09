@@ -4,7 +4,7 @@ import Login from "./components/Login";
 import Register from "./components/Register"; // Import the Register component
 import Dashboard from "./components/Dashboard";
 import Profile from "./components/Profile";
-import Category from "./components/Category";
+import ProductPage from "./components/ProductPage";
 
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
                 <Route path="/register" element={<Register />} /> {/* Register Route */}
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path = "/profile" element={<Profile />}/>
-                <Route path = "/category" element = {<Category/>}/>
+		        <Route path="/products/:season" element={<ProductPage />} />
                 <Route path="*" element={<Login />} /> {/* Default to Login */}
             </Routes>
         </Router>
