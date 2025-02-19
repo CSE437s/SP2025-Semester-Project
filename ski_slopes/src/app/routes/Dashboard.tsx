@@ -15,7 +15,7 @@ const Model: React.FC = () => {
 const Dashboard: React.FC = () => {
     
     return (
-        <main className="h-[calc(100vh-3rem)] mt-12 w-full ">
+        <main className="h-[calc(100vh-3rem)] mt-12 w-full">
             <div className="grid h-full grid-cols-1 md:grid-cols-12">
                 {/* Left half grid container */}
                 <div className="bg-yellow-100 col-span-8 h-full">

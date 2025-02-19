@@ -15,8 +15,8 @@ const Navbar: React.FC = () => {
                     About
                 </Link>
 
-                <Link to="/dashboard" className="text-gray-900 text-l">
-                    Dashboard
+                <Link to="/resorts" className="text-gray-900 text-l">
+                    Resorts
                 </Link>
             </div>
 

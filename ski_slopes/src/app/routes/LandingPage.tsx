@@ -1,4 +1,4 @@
-
+import { Link } from 'react-router';
 
 const LandingPage = () => {
     return (
@@ -8,9 +8,12 @@ const LandingPage = () => {
                 <h1 className="text-4xl md:text-6xl font-light mb-8">
                     Explore Ski Mountain Resorts in 3D.
                 </h1>
-                <p className="text-lg md:text-xl text-gray-600 max-w-xl mx-auto">
+                <p className="text-lg md:text-xl text-gray-600 max-w-xl mx-auto mb-12">
                     Discover immersive 3D views and detailed information about your favorite ski resorts.
                 </p>
+                <Link to="/resorts" className="inline-flex mx-auto px-8 py-3 border border-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-lg">
+                    View Resorts
+                </Link>
             </section>
 
             {/* Services Section */}

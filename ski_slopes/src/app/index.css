@@ -62,6 +62,5 @@
   }
   body {
     color: hsl(var(--foreground) / 1);
-    overscroll-behavior: contain;
   }
 }
