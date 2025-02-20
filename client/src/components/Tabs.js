@@ -2,18 +2,16 @@ import React, { useState, useEffect } from "react";
 import { AppBar, Tab, Tabs, Box, IconButton, Typography } from "@mui/material";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person";
+import logo from "../image/logo.png";
 
 function TabsComponent() {
     const navigate = useNavigate();
     const location = useLocation();  
     const [value, setValue] = useState(0);
 
-    
     useEffect(() => {
-        if (location.pathname === "/category") {
+        if (location.pathname === "/profile") {
             setValue(1);
-        } else if (location.pathname === "/profile") {
-            setValue(2);
         } else if (location.pathname === "/") {
             setValue(0);
         }
@@ -32,6 +30,16 @@ function TabsComponent() {
         <Box sx={{ width: "100%" }}>
             <AppBar position="fixed" sx={{ backgroundColor: "#333" }}>
                 <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+                    {/* Leftmost Logo */}
+                    <Box sx={{ marginLeft: 2 }}>
+                        <img
+                            src={logo}  
+                            alt="Logo"
+                            style={{ height: "40px" }} 
+                        />
+                    </Box>
+
+                    {/* Tab Section */}
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                         <Tabs
                             value={value}
@@ -56,6 +64,7 @@ function TabsComponent() {
                         </Tabs>
                     </Box>
 
+                    {/* Rightmost Profile Icon */}
                     <Box sx={{ display: "flex", alignItems: "center", marginRight: 2 }}>
                         <Typography sx={{ color: "#fff", marginRight: 1 }}></Typography>
                         <IconButton component={Link} to="/profile" sx={{ color: "#fff" }}>
