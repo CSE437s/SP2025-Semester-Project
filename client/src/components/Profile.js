@@ -7,53 +7,100 @@ import TabsComponent from "./Tabs";
 function Profile() {
     const navigate = useNavigate();
     const [showEditProfile, setShowEditProfile] = useState(false);
-    const [userData, setUserData] = useState({
-        username: "",
-        name: "",
-        password: "",
-        confirmPassword: "",
-        bio: "",
-        location: "",
-        birthdate: "1990-01-01",
-        dateJoined: "2023-06-15",
-    });
+    const [products, setProducts] = useState([]);
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [notification, setNotification] = useState(null);
 
     useEffect(() => {
-        const fetchProfileData = async () => {
+        const fetchProducts = async () => {
             try {
                 const token = localStorage.getItem("token");
-
                 if (!token) {
                     alert("Unauthorized! Redirecting to login.");
                     navigate("/login");
                     return;
                 }
 
-                const sampleUserData = {
-                    username: "john_doe",
-                    name: "John Doe",
-                    password: "",
-                    confirmPassword: "",
-                    bio: "I love trading vintage items.",
-                    location: "New York",
-                    birthdate: "1990-05-15",
-                    dateJoined: "2022-01-10",
-                };
+                const response = await axios.get("http://localhost:8080/api/products", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-                setUserData(sampleUserData);
+                setProducts(response.data);
             } catch (error) {
-                console.error("Profile error:", error);
-                alert("Session expired. Please log in again.");
-                navigate("/login");
+                console.error("Error fetching products:", error);
             }
         };
 
-        fetchProfileData();
+        fetchProducts();
     }, [navigate]);
 
-    const handleInputChange = (e) => {
-        setUserData({ ...userData, [e.target.name]: e.target.value });
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Unauthorized! Redirecting to login.");
+                navigate("/login");
+                return;
+            }
+
+            const response = await axios.put(
+                "http://localhost:8080/api/update-profile",
+                {
+                    username,
+                    email,
+                    currentPassword,
+                    newPassword,
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.status === 200) {
+                setNotification("Profile updated successfully!");
+            } else {
+                setNotification(response.data.message || "Update failed.");
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            setNotification("Failed to update profile.");
+        }
     };
+
+    const handleUpdateField = async (field, value) => {
+        if (!value) {
+            alert(`${field} cannot be empty.`);
+            return;
+        }
+    
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Unauthorized! Redirecting to login.");
+                navigate("/login");
+                return;
+            }
+    
+            const response = await axios.put(
+                "http://localhost:8080/api/update-profile",
+                { field, value },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+    
+            if (response.status === 200) {
+                alert(`${field} updated successfully!`);
+            } else {
+                alert(response.data.message || "Update failed.");
+            }
+        } catch (error) {
+            console.error(`Error updating ${field}:`, error);
+            alert(`Failed to update ${field}.`);
+        }
+    };
+    
 
     return (
         <div>
@@ -63,66 +110,39 @@ function Profile() {
                 <div style={contentStyle}>
                     {!showEditProfile ? (
                         <>
-                            <h2>Your Trading Timeline</h2>
+                            <h2>Your Products</h2>
                             <table style={tableStyle}>
                                 <thead>
                                     <tr>
-                                        <th>Number</th>
-                                        <th>Item</th>
-                                        <th>Trade With</th>
-                                        <th>Trade Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>ID</th>
+                                        <th>Product Name</th>
+                                        <th>Suitable Season</th>
+                                        <th>Description</th>
+                                        <th>Image</th>
+                                        <th>Created At</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Vintage Watch</td>
-                                        <td>Alice</td>
-                                        <td>2024-01-10</td>
-                                        <td>Completed</td>
-                                        <td><button>View</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Comic Book</td>
-                                        <td>Bob</td>
-                                        <td>2024-02-01</td>
-                                        <td>Pending</td>
-                                        <td><button>View</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <h2>Your Wishlist Items</h2>
-                            <table style={tableStyle}>
-                                <thead>
-                                    <tr>
-                                        <th>Number</th>
-                                        <th>Item</th>
-                                        <th>Trade With</th>
-                                        <th>Trade Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Vintage Watch</td>
-                                        <td>Alice</td>
-                                        <td>2024-01-10</td>
-                                        <td>Completed</td>
-                                        <td><button>View</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Comic Book</td>
-                                        <td>Bob</td>
-                                        <td>2024-02-01</td>
-                                        <td>Pending</td>
-                                        <td><button>View</button></td>
-                                    </tr>
+                                    {products.map((product) => (
+                                        <tr key={product.id}>
+                                            <td>{product.id}</td>
+                                            <td>{product.product_name}</td>
+                                            <td>{product.suitable_season}</td>
+                                            <td>{product.product_description}</td>
+                                            <td>
+                                                {product.product_image ? (
+                                                    <img
+                                                        src={`http://localhost:8080/${product.product_image}`}
+                                                        alt={product.product_name}
+                                                        width="50"
+                                                    />
+                                                ) : (
+                                                    "No Image"
+                                                )}
+                                            </td>
+                                            <td>{new Date(product.created_at).toLocaleDateString()}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </>
@@ -130,56 +150,34 @@ function Profile() {
                         <div style={editProfileContainer}>
                             <h2>✏ Edit Your Information</h2>
                             <button style={backButton} onClick={() => setShowEditProfile(false)}>← Back to Profile</button>
-                            
-                            <form style={formStyle}>
-                                <div style={inputRowStyle}>
-                                    <label>Username</label>
-                                    <input type="text" name="username" value={userData.username} onChange={handleInputChange} />
-                                </div>
 
-                                <div style={inputRowStyle}>
-                                    <label>Name</label>
-                                    <input type="text" name="name" value={userData.name} onChange={handleInputChange} />
-                                </div>
+                            <form style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
+                            <label>Username:</label>
+                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                                <button type="button" onClick={() => handleUpdateField("username", username)}>Save</button>
+                            </div>
 
-                                <div style={inputRowStyle}>
-                                    <label>Password</label>
-                                    <input type="password" name="password" value={userData.password} onChange={handleInputChange} />
-                                </div>
+                            <label>Email:</label>
+                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                                <button type="button" onClick={() => handleUpdateField("email", email)}>Save</button>
+                            </div>
 
-                                <div style={inputRowStyle}>
-                                    <label>Confirm Password</label>
-                                    <input type="password" name="confirmPassword" value={userData.confirmPassword} onChange={handleInputChange} />
-                                </div>
-
-                                <button style={saveButton}>Change Password ✔</button>
-                                <p style={successMessage}>Password changed successfully ✔✔</p>
-
-                                <div style={inputRowStyle}>
-                                    <label>Bio</label>
-                                    <textarea name="bio" value={userData.bio} onChange={handleInputChange} />
-                                </div>
-
-                                <div style={inputRowStyle}>
-                                    <label>Location</label>
-                                    <input type="text" name="location" value={userData.location} onChange={handleInputChange} />
-                                </div>
-
-                                <button style={saveButton}>Save Changes ✔</button>
-                                <p style={successMessage}>Changes saved successfully ✔✔</p>
-
-                                <div style={inputRowStyle}>
-                                    <label>Birthdate</label>
-                                    <input type="text" value={userData.birthdate} disabled />
-                                </div>
-
-                                <div style={inputRowStyle}>
-                                    <label>Date Joined</label>
-                                    <input type="text" value={userData.dateJoined} disabled />
-                                </div>
-
-                                <p>Terms of Service and Privacy Policy</p>
+                            <label>New Password:</label>
+                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                                <button type="button" onClick={() => handleUpdateField("password", newPassword)}>Save</button>
+                            </div>
                             </form>
+
+
+                            {notification && (
+                                <div style={notificationStyle}>
+                                    {notification}
+                                    <button onClick={() => setNotification(null)}>X</button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -212,35 +210,27 @@ const editProfileContainer = {
     alignItems: "center",
 };
 
-const formStyle = {
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-};
-
-const inputRowStyle = {
-    display: "flex",
-    flexDirection: "column",
+const backButton = {
+    marginBottom: "15px",
+    cursor: "pointer",
 };
 
 const saveButton = {
-    marginTop: "10px",
-    padding: "10px",
-    backgroundColor: "#28a745",
+    padding: "10px 15px",
+    backgroundColor: "#007bff",
     color: "white",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+    marginTop: "10px",
 };
 
-const successMessage = {
-    color: "green",
-};
-
-const backButton = {
-    marginBottom: "15px",
-    cursor: "pointer",
+const notificationStyle = {
+    padding: "10px",
+    backgroundColor: "lightgreen",
+    color: "black",
+    borderRadius: "5px",
+    marginTop: "10px",
 };
 
 export default Profile;

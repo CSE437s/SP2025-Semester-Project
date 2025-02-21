@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const Sidebar = ({ onManageProfileClick }) => {
-    const [user, setUser] = useState({ name: "", bio: "", location: "", memberSince: "" });
+    const [user, setUser] = useState({ username: "", memberSince: "" });
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -16,10 +16,10 @@ const Sidebar = ({ onManageProfileClick }) => {
                 });
 
                 setUser({
-                    name: response.data.username || "User",
-                    bio: response.data.bio || "No bio available",
-                    location: response.data.location || "Not specified",
-                    memberSince: response.data.memberSince || "Unknown",
+                    username: response.data.username || "User",
+                    memberSince: response.data.created_at 
+                        ? new Date(response.data.created_at).toLocaleDateString() 
+                        : "Unknown",
                 });
             } catch (error) {
                 console.error("Error fetching user profile:", error);
@@ -31,27 +31,24 @@ const Sidebar = ({ onManageProfileClick }) => {
 
     return (
         <div style={sidebarStyle}>
-            
             <div style={profilePictureStyle}></div>
 
-            <h2>Hello, {user.name}!</h2>
+            <h2>Hello, {user.username}!</h2>
 
-            
             <button style={buttonStyle} onClick={onManageProfileClick}>
                 Manage Your Profile
             </button>
 
             <div style={{ width: "100%", marginTop: "20px", textAlign: "left" }}>
-                <p><strong>📛 NAME:</strong> {user.name}</p>
-                <p><strong>🖊 BIO:</strong> {user.bio}</p>
-                <p><strong>📍 LOCATION:</strong> {user.location}</p>
+                <p><strong>📛 NAME:</strong> {user.username}</p>
+                
                 <p><strong>📅 MEMBER SINCE:</strong> {user.memberSince}</p>
             </div>
         </div>
     );
 };
 
-//styles
+// Styles
 const sidebarStyle = {
     width: "250px",
     height: "100vh",

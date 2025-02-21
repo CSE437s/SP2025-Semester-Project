@@ -163,9 +163,24 @@ router.get("/products/:season", authenticateToken, async (req, res) => {
 
 
 // Profile Route (protected)
-router.get("/profile", authenticateToken, (req, res) => {
-    res.json({ message: "Welcome to the profile page!", user: req.user });
+router.get("/profile", authenticateToken, async (req, res) => {
+    try {
+        const [user] = await db.promise().query("SELECT username, created_at FROM users WHERE id = ?", [req.user.id]);
+
+        if (user.length === 0) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        res.json({
+            username: user[0].username,
+            created_at: user[0].created_at,
+        });
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
+        res.status(500).json({ message: "Failed to fetch profile." });
+    }
 });
+
 
 // Category Route (protected)
 router.get("/category", authenticateToken, (req, res) => {
@@ -173,3 +188,50 @@ router.get("/category", authenticateToken, (req, res) => {
 });
 
 module.exports = router;
+
+
+// Fetch All Products (public or protected based on your preference)
+router.get("/products", authenticateToken, async (req, res) => {
+    try {
+        const [rows] = await db.promise().query("SELECT * FROM products");
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error("Error fetching all products:", error);
+        res.status(500).json({ message: "Failed to fetch products." });
+    }
+});
+
+// Update Profile Route (Partial Updates)
+router.put("/update-profile", authenticateToken, async (req, res) => {
+    const { field, value } = req.body;
+    const userId = req.user.id; // Extracted from JWT token
+
+    if (!field || !value) {
+        return res.status(400).json({ message: "Field and value are required." });
+    }
+
+    try {
+        const allowedFields = ["username", "email", "password"];
+        if (!allowedFields.includes(field)) {
+            return res.status(400).json({ message: "Invalid field." });
+        }
+
+        let updateQuery;
+        let updateValues;
+
+        if (field === "password") {
+            const hashedPassword = await bcrypt.hash(value, 10);
+            updateQuery = "UPDATE users SET password = ? WHERE id = ?";
+            updateValues = [hashedPassword, userId];
+        } else {
+            updateQuery = `UPDATE users SET ${field} = ? WHERE id = ?`;
+            updateValues = [value, userId];
+        }
+
+        await db.promise().query(updateQuery, updateValues);
+        res.status(200).json({ message: `${field} updated successfully!` });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ message: "Server error. Please try again later." });
+    }
+});
