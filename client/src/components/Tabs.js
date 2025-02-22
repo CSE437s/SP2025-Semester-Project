@@ -8,6 +8,7 @@ function TabsComponent() {
     const navigate = useNavigate();
     const location = useLocation();  
     const [value, setValue] = useState(0);
+    const [coinBalance, setCoinBalance] = useState(0); // Placeholder for coin balance
 
     useEffect(() => {
         if (location.pathname === "/profile") {
@@ -15,6 +16,15 @@ function TabsComponent() {
         } else if (location.pathname === "/") {
             setValue(0);
         }
+
+        // Placeholder logic to set coin balance
+        const fetchCoinBalance = async () => {
+            // Simulate API call for coins
+            const placeholderCoins = 100; // Replace this with actual API call once available
+            setCoinBalance(placeholderCoins);
+        };
+
+        fetchCoinBalance();
     }, [location.pathname]);
 
     const handleChange = (event, newValue) => {
@@ -64,9 +74,9 @@ function TabsComponent() {
                         </Tabs>
                     </Box>
 
-                    {/* Rightmost Profile Icon */}
+                    {/* Rightmost Profile Icon and Coin Balance */}
                     <Box sx={{ display: "flex", alignItems: "center", marginRight: 2 }}>
-                        <Typography sx={{ color: "#fff", marginRight: 1 }}></Typography>
+                        <Typography sx={{ color: "#fff", marginRight: 2 }}>Coins: {coinBalance}</Typography>
                         <IconButton component={Link} to="/profile" sx={{ color: "#fff" }}>
                             <PersonIcon />
                         </IconButton>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TextField, Button, Container, Typography } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Footer from "./Footer"; // Adjust the path based on your folder structure
 
 function Login() {
     const [form, setForm] = useState({ email: "", password: "" });
@@ -55,7 +56,9 @@ function Login() {
                     Login
                 </Button>
             </form>
+            <Footer/>
         </Container>
+        
     );
 }
 

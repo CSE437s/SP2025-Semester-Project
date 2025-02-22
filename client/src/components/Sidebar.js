@@ -31,7 +31,7 @@ const Sidebar = ({ onManageProfileClick }) => {
 
     return (
         <div style={sidebarStyle}>
-            <div style={profilePictureStyle}></div>
+            {/* <div style={profilePictureStyle}></div> */}
 
             <h2>Hello, {user.username}!</h2>
 
@@ -63,13 +63,13 @@ const sidebarStyle = {
     boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
 };
 
-const profilePictureStyle = {
-    width: "80px",
-    height: "80px",
-    backgroundColor: "#ccc",
-    borderRadius: "50%",
-    marginBottom: "10px",
-};
+// const profilePictureStyle = {
+//     width: "80px",
+//     height: "80px",
+//     backgroundColor: "#ccc",
+//     borderRadius: "50%",
+//     marginBottom: "10px",
+// };
 
 const buttonStyle = {
     backgroundColor: "#ff5722",
