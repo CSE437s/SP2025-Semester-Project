@@ -217,9 +217,41 @@ function ProductPage() {
         setCoinAmount(0);
     };
 
-    const handleTradeSubmit = () => {
-        alert(`Trade request submitted for ${selectedProduct.product_name} with ${coinAmount} coins.`);
-        handleCloseModal();
+    const handleTradeSubmit = async () => {
+        try {
+            const token = localStorage.getItem('token'); // Retrieve token for authentication
+            const receiverId = selectedProduct.owner_id; // ID of the item owner
+            const requestedItemId = selectedProduct.id; // ID of the item being requested
+            const coinsOffered = coinAmount; // Number of coins offered
+    
+            // Log the payload for debugging
+            console.log('Sending payload:', {
+                receiverId,
+                requestedItemId,
+                coinsOffered,
+            });
+    
+            const response = await axios.post(
+                'http://localhost:8080/api/trade/request',
+                {
+                    receiverId,
+                    requestedItemId,
+                    coinsOffered,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Send token for authentication
+                    },
+                }
+            );
+    
+            alert(`Trade request submitted for ${selectedProduct.product_name} with ${coinAmount} coins.`);
+            handleCloseModal();
+            console.log('Trade request created successfully:', response.data);
+        } catch (error) {
+            console.error('Error submitting trade request:', error);
+            alert('Failed to submit trade request. Please try again.');
+        }
     };
 
     useEffect(() => {

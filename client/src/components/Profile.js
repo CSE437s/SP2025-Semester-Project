@@ -9,6 +9,7 @@ function Profile() {
     const navigate = useNavigate();
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [products, setProducts] = useState([]);
+    const [pendingTrades, setPendingTrades] = useState([]);
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
@@ -38,8 +39,50 @@ function Profile() {
         fetchProducts();
     }, [navigate]);
 
-    const handleTradeRequestAction = (productId, requestId, action) => {
-        alert(`Trade request ${action}d for request ID ${requestId} on product ID ${productId}.`);
+    const fetchPendingTrades = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:8080/api/trade/pending', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching pending trades:', error);
+            return [];
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const pendingTrades = await fetchPendingTrades();
+            setPendingTrades(pendingTrades);
+        };
+    
+        fetchData();
+    }, []);
+
+    const handleTradeRequestAction = async (tradeId, action) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                `http://localhost:8080/api/trade/${action}/${tradeId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            alert(`Trade request ${action}ed successfully.`);
+            console.log('Trade action response:', response.data);
+            const updatedPendingTrades = await fetchPendingTrades();
+            setPendingTrades(updatedPendingTrades);
+        } catch (error) {
+            console.error(`Error ${action}ing trade request:`, error);
+            alert(`Failed to ${action} trade request. Please try again.`);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -114,6 +157,48 @@ function Profile() {
                 <div style={contentStyle}>
                     {!showEditProfile ? (
                         <>
+
+<div>
+    <h2>Pending Trade Requests</h2>
+    {pendingTrades.length > 0 ? (
+        <table style={tableStyle}>
+            <thead>
+                <tr>
+                    <th>Trade ID</th>
+                    <th>Requested Item</th>
+                    <th>Coins Offered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {pendingTrades.map((trade) => (
+                    <tr key={trade.id}>
+                        <td>{trade.id}</td>
+                        <td>{trade.requested_item_id}</td>
+                        <td>{trade.coins_offered}</td>
+                        <td>
+                            <button
+                                style={approveButton}
+                                onClick={() => handleTradeRequestAction(trade.id, "accept")}
+                            >
+                                Approve
+                            </button>
+                            <button
+                                style={declineButton}
+                                onClick={() => handleTradeRequestAction(trade.id, "decline")}
+                            >
+                                Decline
+                            </button>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    ) : (
+        <p>No pending trade requests.</p>
+    )}
+</div>
+                        
                             <h2>Your Products</h2>
                             <table style={tableStyle}>
                                 <thead>
@@ -197,6 +282,9 @@ function Profile() {
                                     ))}
                                 </tbody>
                             </table>
+
+                                        
+
                         </>
                     ) : (
                         <div style={editProfileContainer}>

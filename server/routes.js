@@ -240,124 +240,198 @@ router.put("/update-profile", authenticateToken, async (req, res) => {
     }
 });
 
-//create trade requests
-router.post('/trade/request',(req,res)=>{
-    const {senderId,receiverId, offeredItemId, requestedItemId, coinsOffered}=req.body;
+//Trading
+//create trade requests (coin based)
+router.post('/trade/request', authenticateToken, (req, res) => {
+    const { receiverId, requestedItemId, coinsOffered } = req.body;
+    const senderId = req.user.id; // Get sender_id from the authenticated user
+
+    // Validate required fields
+    if (!senderId || !receiverId || !requestedItemId || !coinsOffered) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Insert trade into the database
     const query = `
-    INSERT INTO trades (sender_id, receiver_id, offered_item_id, requested_item_id, coins_offered, status)
-    VALUES (?, ?, ?, ?, ?, 'pending')
-  `;
-  db.query(query, [senderId, receiverId, offeredItemId, requestedItemId, coinsOffered], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(200).json({ message: 'Trade request created successfully', tradeId: result.insertId });
-  });
+        INSERT INTO trades (sender_id, receiver_id, offered_item_id, requested_item_id, coins_offered, status)
+        VALUES (?, ?, NULL, ?, ?, 'pending')
+    `;
+
+    db.query(query, [senderId, receiverId, requestedItemId, coinsOffered], (err, result) => {
+        if (err) {
+            console.error('Error creating trade:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(200).json({ message: 'Trade request created successfully', tradeId: result.insertId });
+    });
 });
 
-//fetch pending trade requests for user
-router.get('/trade/pending/:userId', (req, res) => {
-    const userId = req.params.userId;
-  
-    const query = `
-      SELECT * FROM trades WHERE receiver_id = ? AND status = 'pending'
-    `;
-  
-    db.query(query, [userId], (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.status(200).json(results);
-    });
-  });
 
   //fetch all pending trade requests for user
-  router.get('/trade/pending/:userId', (req, res) => {
-    const userId = req.params.userId;
-  
+  router.get('/trade/pending', authenticateToken, (req, res) => {
+    const userId = req.user.id; 
+
     const query = `
-      SELECT * FROM trades WHERE receiver_id = ? AND status = 'pending'
+        SELECT * FROM trades WHERE receiver_id = ? AND status = 'pending'
     `;
-  
+
     db.query(query, [userId], (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.status(200).json(results);
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(200).json(results);
     });
-  });
+});
 
   //accept trade
-  router.post('/trade/accept/:tradeId', (req, res) => {
+  router.post('/trade/accept/:tradeId', authenticateToken, (req, res) => {
     const tradeId = req.params.tradeId;
-  
-    const transferOwnershipQuery = `
-      UPDATE products
-      JOIN trades ON products.id = trades.requested_item_id
-      SET products.owner_id = trades.sender_id
-      WHERE trades.id = ?
+    const userId = req.user.id; // Get user ID from JWT
+
+    // Verify that the user is the receiver of the trade
+    const verifyReceiverQuery = `
+        SELECT * FROM trades WHERE id = ? AND receiver_id = ?
     `;
-  
-    const transferOfferedItemQuery = `
-      UPDATE products
-      JOIN trades ON products.id = trades.offered_item_id
-      SET products.owner_id = trades.receiver_id
-      WHERE trades.id = ? AND trades.offered_item_id IS NOT NULL
-    `;
-  
-    const deductCoinsQuery = `
-      UPDATE users
-      SET coins = coins - (SELECT coins_offered FROM trades WHERE id = ?)
-      WHERE id = (SELECT sender_id FROM trades WHERE id = ?)
-    `;
-  
-    const addCoinsQuery = `
-      UPDATE users
-      SET coins = coins + (SELECT coins_offered FROM trades WHERE id = ?)
-      WHERE id = (SELECT receiver_id FROM trades WHERE id = ?)
-    `;
-  
-    db.beginTransaction(err => {
-      if (err) return res.status(500).json({ error: err.message });
-  
-      db.query(transferOwnershipQuery, [tradeId], (err) => {
-        if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
-  
-        db.query(transferOfferedItemQuery, [tradeId], (err) => {
-          if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
-  
-          db.query(deductCoinsQuery, [tradeId, tradeId], (err) => {
-            if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
-  
-            db.query(addCoinsQuery, [tradeId, tradeId], (err) => {
-              if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
-  
-              const updateTradeStatusQuery = `
-                UPDATE trades SET status = 'accepted' WHERE id = ?
-              `;
-              db.query(updateTradeStatusQuery, [tradeId], (err) => {
-                if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
-  
-                db.commit(err => {
-                  if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
-                  res.status(200).json({ message: 'Trade accepted and processed' });
+
+    db.query(verifyReceiverQuery, [tradeId, userId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length === 0) {
+            return res.status(403).json({ error: 'You are not authorized to accept this trade.' });
+        }
+
+        // Get a connection from the pool
+        db.getConnection((err, connection) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Start transaction
+            connection.beginTransaction(err => {
+                if (err) {
+                    connection.release(); // Release the connection back to the pool
+                    return res.status(500).json({ error: err.message });
+                }
+
+                // Transfer ownership of the requested item
+                const transferOwnershipQuery = `
+                    UPDATE products
+                    JOIN trades ON products.id = trades.requested_item_id
+                    SET products.owner_id = trades.sender_id
+                    WHERE trades.id = ?
+                `;
+
+                connection.query(transferOwnershipQuery, [tradeId], (err) => {
+                    if (err) {
+                        return connection.rollback(() => {
+                            connection.release();
+                            res.status(500).json({ error: err.message });
+                        });
+                    }
+
+                    // Transfer ownership of the offered item (if any)
+                    const transferOfferedItemQuery = `
+                        UPDATE products
+                        JOIN trades ON products.id = trades.offered_item_id
+                        SET products.owner_id = trades.receiver_id
+                        WHERE trades.id = ? AND trades.offered_item_id IS NOT NULL
+                    `;
+
+                    connection.query(transferOfferedItemQuery, [tradeId], (err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                connection.release();
+                                res.status(500).json({ error: err.message });
+                            });
+                        }
+
+                        // Deduct coins from the sender
+                        const deductCoinsQuery = `
+                            UPDATE users
+                            SET coins = coins - (SELECT coins_offered FROM trades WHERE id = ?)
+                            WHERE id = (SELECT sender_id FROM trades WHERE id = ?)
+                        `;
+
+                        connection.query(deductCoinsQuery, [tradeId, tradeId], (err) => {
+                            if (err) {
+                                return connection.rollback(() => {
+                                    connection.release();
+                                    res.status(500).json({ error: err.message });
+                                });
+                            }
+
+                            // Add coins to the receiver
+                            const addCoinsQuery = `
+                                UPDATE users
+                                SET coins = coins + (SELECT coins_offered FROM trades WHERE id = ?)
+                                WHERE id = (SELECT receiver_id FROM trades WHERE id = ?)
+                            `;
+
+                            connection.query(addCoinsQuery, [tradeId, tradeId], (err) => {
+                                if (err) {
+                                    return connection.rollback(() => {
+                                        connection.release();
+                                        res.status(500).json({ error: err.message });
+                                    });
+                                }
+
+                                // Update trade status to 'accepted'
+                                const updateTradeStatusQuery = `
+                                    UPDATE trades SET status = 'accepted' WHERE id = ?
+                                `;
+
+                                connection.query(updateTradeStatusQuery, [tradeId], (err) => {
+                                    if (err) {
+                                        return connection.rollback(() => {
+                                            connection.release();
+                                            res.status(500).json({ error: err.message });
+                                        });
+                                    }
+
+                                    // Commit the transaction
+                                    connection.commit(err => {
+                                        if (err) {
+                                            return connection.rollback(() => {
+                                                connection.release();
+                                                res.status(500).json({ error: err.message });
+                                            });
+                                        }
+
+                                        connection.release(); // Release the connection back to the pool
+                                        res.status(200).json({ message: 'Trade accepted and processed' });
+                                    });
+                                });
+                            });
+                        });
+                    });
                 });
-              });
             });
-          });
         });
-      });
     });
-  });
+});
 
   //decline trade
-  router.post('/trade/decline/:tradeId', (req, res) => {
+  router.post('/trade/decline/:tradeId', authenticateToken, (req, res) => {
     const tradeId = req.params.tradeId;
-  
-    const query = `
-      UPDATE trades SET status = 'declined' WHERE id = ?
-    `;
-  
-    db.query(query, [tradeId], (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.status(200).json({ message: 'Trade declined successfully' });
-    });
-  });
+    const userId = req.user.id; // Get user ID from JWT
 
+    // Verify that the user is the receiver of the trade
+    const verifyReceiverQuery = `
+        SELECT * FROM trades WHERE id = ? AND receiver_id = ?
+    `;
+
+    db.query(verifyReceiverQuery, [tradeId, userId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length === 0) {
+            return res.status(403).json({ error: 'You are not authorized to decline this trade.' });
+        }
+
+        // Update trade status to 'declined'
+        const query = `
+            UPDATE trades SET status = 'declined' WHERE id = ?
+        `;
+
+        db.query(query, [tradeId], (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(200).json({ message: 'Trade declined successfully' });
+        });
+    });
+});
 
 
   //fetch the current coin balance for a user
