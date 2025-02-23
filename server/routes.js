@@ -251,25 +251,47 @@ router.post('/trade/request', authenticateToken, (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Check if the sender is trying to trade with themselves
     if (senderId === receiverId) {
         return res.status(400).json({ error: 'You cannot trade with yourself.' });
     }
 
-    // Insert trade into the database
-    const query = `
-        INSERT INTO trades (sender_id, receiver_id, offered_item_id, requested_item_id, coins_offered, status)
-        VALUES (?, ?, NULL, ?, ?, 'pending')
+    // Check if the sender has enough coins
+    const checkCoinsQuery = `
+        SELECT coins FROM users WHERE id = ?
     `;
 
-    db.query(query, [senderId, receiverId, requestedItemId, coinsOffered], (err, result) => {
+    db.query(checkCoinsQuery, [senderId], (err, results) => {
         if (err) {
-            console.error('Error creating trade:', err);
+            console.error('Error checking coin balance:', err);
             return res.status(500).json({ error: err.message });
         }
-        res.status(200).json({ message: 'Trade request created successfully', tradeId: result.insertId });
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const senderCoins = results[0].coins;
+
+        if (senderCoins < coinsOffered) {
+            return res.status(400).json({ error: 'You do not have enough coins to make this trade.' });
+        }
+
+        // Insert trade into the database
+        const insertTradeQuery = `
+            INSERT INTO trades (sender_id, receiver_id, offered_item_id, requested_item_id, coins_offered, status)
+            VALUES (?, ?, NULL, ?, ?, 'pending')
+        `;
+
+        db.query(insertTradeQuery, [senderId, receiverId, requestedItemId, coinsOffered], (err, result) => {
+            if (err) {
+                console.error('Error creating trade:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            res.status(200).json({ message: 'Trade request created successfully', tradeId: result.insertId });
+        });
     });
 });
-
 
   //fetch all pending trade requests for user
   router.get('/trade/pending', authenticateToken, (req, res) => {
