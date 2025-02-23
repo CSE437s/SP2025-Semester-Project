@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Container, Typography } from "@mui/material";
 import axios from "axios";
+import Footer from "./Footer";
 
 function Register() {
     const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -55,6 +56,7 @@ function Register() {
                     Register
                 </Button>
             </form>
+            <Footer/>
         </Container>
     );
 }

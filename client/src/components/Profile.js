@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "./Sidebar";
 import TabsComponent from "./Tabs";
+import Footer from "./Footer";
 
 function Profile() {
     const navigate = useNavigate();
@@ -36,6 +37,10 @@ function Profile() {
 
         fetchProducts();
     }, [navigate]);
+
+    const handleTradeRequestAction = (productId, requestId, action) => {
+        alert(`Trade request ${action}d for request ID ${requestId} on product ID ${productId}.`);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -75,7 +80,7 @@ function Profile() {
             alert(`${field} cannot be empty.`);
             return;
         }
-    
+
         try {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -83,13 +88,13 @@ function Profile() {
                 navigate("/login");
                 return;
             }
-    
+
             const response = await axios.put(
                 "http://localhost:8080/api/update-profile",
                 { field, value },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
+
             if (response.status === 200) {
                 alert(`${field} updated successfully!`);
             } else {
@@ -100,7 +105,6 @@ function Profile() {
             alert(`Failed to update ${field}.`);
         }
     };
-    
 
     return (
         <div>
@@ -120,6 +124,10 @@ function Profile() {
                                         <th>Description</th>
                                         <th>Image</th>
                                         <th>Created At</th>
+                                        <th>Priced At</th>
+                                        <th>Trade Requests</th>
+                                        <th>Actions</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -141,6 +149,50 @@ function Profile() {
                                                 )}
                                             </td>
                                             <td>{new Date(product.created_at).toLocaleDateString()}</td>
+                                            <td>{""}</td> {/* Priced At left blank as per instruction */}
+                                            <td>
+                                                {product.trade_requests && product.trade_requests.length > 0 ? (
+                                                    product.trade_requests.map((request) => (
+                                                        <div key={request.id} style={{ marginBottom: "10px" }}>
+                                                            <p>Request ID: {request.id}, Coins: {request.coins_offered}</p>
+                                                            <button
+                                                                style={approveButton}
+                                                                onClick={() => handleTradeRequestAction(product.id, request.id, "approve")}
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                            <button
+                                                                style={declineButton}
+                                                                onClick={() => handleTradeRequestAction(product.id, request.id, "decline")}
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p>No Trade Requests</p>
+                                                )}
+                                            </td>
+                                            <td>
+                                                {product.trade_requests && product.trade_requests.length > 0 ? (
+                                                    <>
+                                                        <button
+                                                            style={approveButton}
+                                                            onClick={() => alert(`Approve clicked for product ID ${product.id}`)}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            style={declineButton}
+                                                            onClick={() => alert(`Decline clicked for product ID ${product.id}`)}
+                                                        >
+                                                            Decline
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <p>No Actions Available</p>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -152,25 +204,24 @@ function Profile() {
                             <button style={backButton} onClick={() => setShowEditProfile(false)}>← Back to Profile</button>
 
                             <form style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
-                            <label>Username:</label>
-                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                                <button type="button" onClick={() => handleUpdateField("username", username)}>Save</button>
-                            </div>
+                                <label>Username:</label>
+                                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                                    <button type="button" onClick={() => handleUpdateField("username", username)}>Save</button>
+                                </div>
 
-                            <label>Email:</label>
-                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                                <button type="button" onClick={() => handleUpdateField("email", email)}>Save</button>
-                            </div>
+                                <label>Email:</label>
+                                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                                    <button type="button" onClick={() => handleUpdateField("email", email)}>Save</button>
+                                </div>
 
-                            <label>New Password:</label>
-                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                                <button type="button" onClick={() => handleUpdateField("password", newPassword)}>Save</button>
-                            </div>
+                                <label>New Password:</label>
+                                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                    <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                                    <button type="button" onClick={() => handleUpdateField("password", newPassword)}>Save</button>
+                                </div>
                             </form>
-
 
                             {notification && (
                                 <div style={notificationStyle}>
@@ -182,6 +233,7 @@ function Profile() {
                     )}
                 </div>
             </div>
+            <Footer/>
         </div>
     );
 }
@@ -203,26 +255,46 @@ const tableStyle = {
     textAlign: "left",
 };
 
+const approveButton = {
+    marginRight: "10px",
+    padding: "5px 10px",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+};
+
+const declineButton = {
+    padding: "5px 10px",
+    backgroundColor: "#f44336",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+};
+
 const editProfileContainer = {
     width: "50%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    backgroundColor: "#f9f9f9",
+    padding: "30px",
+    borderRadius: "15px",
+    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
 };
 
 const backButton = {
-    marginBottom: "15px",
+    marginBottom: "20px",
     cursor: "pointer",
-};
-
-const saveButton = {
-    padding: "10px 15px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginTop: "10px",
+    padding: "10px 20px",
+    border: "1px solid #007bff",
+    borderRadius: "25px",
+    backgroundColor: "white",
+    color: "#007bff",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
 };
 
 const notificationStyle = {

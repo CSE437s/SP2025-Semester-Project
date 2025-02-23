@@ -6,6 +6,7 @@ import springImage from '../image/spring.PNG';
 import summerImage from '../image/summer.PNG';
 import autumnImage from '../image/autumn.PNG';
 import winterImage from '../image/winter.PNG';
+import Footer from "./Footer";
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -205,6 +206,7 @@ function Dashboard() {
                     </div>
                 </div>
             )}
+            <Footer/>
         </div>
     );
 }
