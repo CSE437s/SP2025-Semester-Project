@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AppBar, Tab, Tabs, Box, IconButton, Typography } from "@mui/material";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import axios from "axios";
 import PersonIcon from "@mui/icons-material/Person";
 import logo from "../image/logo.png";
 
@@ -19,9 +20,17 @@ function TabsComponent() {
 
         // Placeholder logic to set coin balance
         const fetchCoinBalance = async () => {
-            // Simulate API call for coins
-            const placeholderCoins = 100; // Replace this with actual API call once available
-            setCoinBalance(placeholderCoins);
+            try {
+                const token = localStorage.getItem('token'); 
+                const response = await axios.get('http://localhost:8080/api/user/coins', {
+                    headers: {
+                        Authorization: `Bearer ${token}` 
+                    }
+                });
+                setCoinBalance(response.data.coins);
+            } catch (error) {
+                console.error("Error fetching coin balance:", error);
+            }
         };
 
         fetchCoinBalance();

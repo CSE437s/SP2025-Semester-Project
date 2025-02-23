@@ -119,15 +119,19 @@ router.get("/dashboard", authenticateToken, (req, res) => {
 router.post('/submit-product', authenticateToken, upload.single('productImage'), async (req, res) => {
     const { productName, suitableSeason, productDescription } = req.body;
     const productImage = req.file ? req.file.path : null; 
+    const owner_id = req.user.id;
 
     if (!productName || !suitableSeason || !productDescription) {
         return res.status(400).json({ message: 'All fields are required except the image.' });
     }
+    if (!owner_id) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     try {
         const [result] = await db.promise().query(
-            "INSERT INTO products (product_name, suitable_season, product_description, product_image) VALUES (?, ?, ?, ?)",
-            [productName, suitableSeason, productDescription, productImage]
+            "INSERT INTO products (product_name, suitable_season, product_description, product_image, owner_id) VALUES (?, ?, ?, ?, ?)",
+            [productName, suitableSeason, productDescription, productImage, owner_id]
         );
 
         res.status(201).json({ message: 'Product submitted successfully!', productId: result.insertId });
@@ -235,3 +239,143 @@ router.put("/update-profile", authenticateToken, async (req, res) => {
         res.status(500).json({ message: "Server error. Please try again later." });
     }
 });
+
+//create trade requests
+router.post('/trade/request',(req,res)=>{
+    const {senderId,receiverId, offeredItemId, requestedItemId, coinsOffered}=req.body;
+    const query = `
+    INSERT INTO trades (sender_id, receiver_id, offered_item_id, requested_item_id, coins_offered, status)
+    VALUES (?, ?, ?, ?, ?, 'pending')
+  `;
+  db.query(query, [senderId, receiverId, offeredItemId, requestedItemId, coinsOffered], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(200).json({ message: 'Trade request created successfully', tradeId: result.insertId });
+  });
+});
+
+//fetch pending trade requests for user
+router.get('/trade/pending/:userId', (req, res) => {
+    const userId = req.params.userId;
+  
+    const query = `
+      SELECT * FROM trades WHERE receiver_id = ? AND status = 'pending'
+    `;
+  
+    db.query(query, [userId], (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(200).json(results);
+    });
+  });
+
+  //fetch all pending trade requests for user
+  router.get('/trade/pending/:userId', (req, res) => {
+    const userId = req.params.userId;
+  
+    const query = `
+      SELECT * FROM trades WHERE receiver_id = ? AND status = 'pending'
+    `;
+  
+    db.query(query, [userId], (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(200).json(results);
+    });
+  });
+
+  //accept trade
+  router.post('/trade/accept/:tradeId', (req, res) => {
+    const tradeId = req.params.tradeId;
+  
+    const transferOwnershipQuery = `
+      UPDATE products
+      JOIN trades ON products.id = trades.requested_item_id
+      SET products.owner_id = trades.sender_id
+      WHERE trades.id = ?
+    `;
+  
+    const transferOfferedItemQuery = `
+      UPDATE products
+      JOIN trades ON products.id = trades.offered_item_id
+      SET products.owner_id = trades.receiver_id
+      WHERE trades.id = ? AND trades.offered_item_id IS NOT NULL
+    `;
+  
+    const deductCoinsQuery = `
+      UPDATE users
+      SET coins = coins - (SELECT coins_offered FROM trades WHERE id = ?)
+      WHERE id = (SELECT sender_id FROM trades WHERE id = ?)
+    `;
+  
+    const addCoinsQuery = `
+      UPDATE users
+      SET coins = coins + (SELECT coins_offered FROM trades WHERE id = ?)
+      WHERE id = (SELECT receiver_id FROM trades WHERE id = ?)
+    `;
+  
+    db.beginTransaction(err => {
+      if (err) return res.status(500).json({ error: err.message });
+  
+      db.query(transferOwnershipQuery, [tradeId], (err) => {
+        if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
+  
+        db.query(transferOfferedItemQuery, [tradeId], (err) => {
+          if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
+  
+          db.query(deductCoinsQuery, [tradeId, tradeId], (err) => {
+            if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
+  
+            db.query(addCoinsQuery, [tradeId, tradeId], (err) => {
+              if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
+  
+              const updateTradeStatusQuery = `
+                UPDATE trades SET status = 'accepted' WHERE id = ?
+              `;
+              db.query(updateTradeStatusQuery, [tradeId], (err) => {
+                if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
+  
+                db.commit(err => {
+                  if (err) return db.rollback(() => res.status(500).json({ error: err.message }));
+                  res.status(200).json({ message: 'Trade accepted and processed' });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  //decline trade
+  router.post('/trade/decline/:tradeId', (req, res) => {
+    const tradeId = req.params.tradeId;
+  
+    const query = `
+      UPDATE trades SET status = 'declined' WHERE id = ?
+    `;
+  
+    db.query(query, [tradeId], (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(200).json({ message: 'Trade declined successfully' });
+    });
+  });
+
+
+
+  //fetch the current coin balance for a user
+  router.get('/user/coins', authenticateToken, (req, res) => {
+    const userId = req.user.id; 
+
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const query = 'SELECT coins FROM users WHERE id = ?';
+    db.query(query, [userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.length === 0) return res.status(404).json({ error: 'User not found' });
+        res.status(200).json({ coins: result[0].coins });
+    });
+});
+  
+  
+  
+  
