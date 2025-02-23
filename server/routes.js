@@ -251,6 +251,10 @@ router.post('/trade/request', authenticateToken, (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    if (senderId === receiverId) {
+        return res.status(400).json({ error: 'You cannot trade with yourself.' });
+    }
+
     // Insert trade into the database
     const query = `
         INSERT INTO trades (sender_id, receiver_id, offered_item_id, requested_item_id, coins_offered, status)

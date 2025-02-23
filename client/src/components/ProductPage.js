@@ -250,7 +250,11 @@ function ProductPage() {
             console.log('Trade request created successfully:', response.data);
         } catch (error) {
             console.error('Error submitting trade request:', error);
-            alert('Failed to submit trade request. Please try again.');
+            if (error.response && error.response.data.error) {
+                alert(error.response.data.error); // Display the error message from the backend
+            } else {
+                alert('Failed to submit trade request. Please try again.');
+            }
         }
     };
 
