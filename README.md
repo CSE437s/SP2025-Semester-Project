@@ -191,4 +191,139 @@ Ensure the following tools are installed:
 
    - Ensure no other services are using ports 8080 or 3000.
 
-``` 
+# Database Setup for Trade System
+
+## 1. Modify `users` table (Add Coins)
+
+Run the following query to add a `coins` column to the `users` table, giving each new user 50 coins by default:
+
+```sql
+ALTER TABLE users ADD COLUMN coins INT DEFAULT 50;
+```
+
+If you already have users in the database, update their coins:
+
+```sql
+UPDATE users SET coins = 50 WHERE coins IS NULL;
+```
+
+---
+
+## 2. Modify `products` table (Add Owner ID)
+
+Since products need an owner, add an `owner_id` column:
+
+```sql
+ALTER TABLE products ADD COLUMN owner_id INT NOT NULL;
+```
+
+This will store the user ID of the owner of each product.
+
+---
+
+## 3. Create `trades` Table
+
+The `trades` table stores trade requests between users.
+
+```sql
+CREATE TABLE trades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,  -- User requesting the trade
+    receiver_id INT NOT NULL,  -- Owner of the requested item
+    offered_item_id INT NULL,  -- Item offered in exchange (NULL if using coins)
+    requested_item_id INT NOT NULL,  -- Item the user wants
+    coins_offered INT DEFAULT 0,  -- Number of coins used (if no item is offered)
+    status ENUM('pending', 'accepted', 'declined') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id),
+    FOREIGN KEY (offered_item_id) REFERENCES products(id),
+    FOREIGN KEY (requested_item_id) REFERENCES products(id)
+);
+```
+
+---
+
+## 4. Trade Ownership Transfer Queries
+
+When a trade is **accepted**, run the following queries to **transfer ownership** of the traded items.
+
+### Transfer the Requested Item to the Sender
+
+```sql
+UPDATE products 
+JOIN trades ON products.id = trades.requested_item_id
+SET products.owner_id = trades.sender_id
+WHERE trades.id = TRADE_ID;
+```
+
+### Transfer the Offered Item to the Receiver (If Applicable)
+
+```sql
+UPDATE products 
+JOIN trades ON products.id = trades.offered_item_id
+SET products.owner_id = trades.receiver_id
+WHERE trades.id = TRADE_ID AND trades.offered_item_id IS NOT NULL;
+```
+
+(Replace `TRADE_ID` with the actual trade ID.)
+
+---
+
+## 5. Deduct Coins If Trading with Coins
+
+If the trade involves **coins instead of an item**, deduct the coins from the sender and add them to the receiver.
+
+### Deduct Coins from Sender
+
+```sql
+UPDATE users 
+SET coins = coins - (SELECT coins_offered FROM trades WHERE id = TRADE_ID) 
+WHERE id = (SELECT sender_id FROM trades WHERE id = TRADE_ID);
+```
+
+### Add Coins to Receiver
+
+```sql
+UPDATE users 
+SET coins = coins + (SELECT coins_offered FROM trades WHERE id = TRADE_ID) 
+WHERE id = (SELECT receiver_id FROM trades WHERE id = TRADE_ID);
+```
+
+(Replace `TRADE_ID` with the actual trade ID.)
+
+---
+
+## 6. Fetch Pending Trade Requests for a User
+
+To retrieve all trade requests that are still pending for a particular user:
+
+```sql
+SELECT * FROM trades WHERE receiver_id = USER_ID AND status = 'pending';
+```
+
+(Replace `USER_ID` with the actual user ID.)
+
+---
+
+## 7. Accept or Decline a Trade
+
+To **accept a trade**, update its status:
+
+```sql
+UPDATE trades SET status = 'accepted' WHERE id = TRADE_ID;
+```
+
+To **decline a trade**, mark it as declined:
+
+```sql
+UPDATE trades SET status = 'declined' WHERE id = TRADE_ID;
+```
+
+---
+
+## Final Instructions for Teammates
+
+✅ **Run all SQL commands above in the database.**  
+✅ **Replace `TRADE_ID` and `USER_ID` with actual values when running queries.**  
+✅ **After accepting a trade, run the appropriate `UPDATE` queries to transfer ownership.**``` 
