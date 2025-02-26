@@ -100,115 +100,162 @@ function Dashboard() {
     };
 
     return (
-        <div style={{ paddingTop: "64px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <button 
-                onClick={toggleForm} 
-                style={{ 
-                    marginBottom: "20px", 
-                    padding: "10px 20px", 
-                    backgroundColor: "grey", 
-                    color: "white", 
-                    border: "none", 
-                    borderRadius: "5px", 
-                    cursor: "pointer", 
-                }}
-            >
-                {showForm ? "Back" : "Submit My Product"}
-            </button>
+        <div style={{ fontFamily: "Arial, sans-serif" }}>
+            {/* Hero Section */}
+            <TabsComponent />
+            <div style={{
+                backgroundImage: "url('https://plus.unsplash.com/premium_photo-1683120931945-ae07bb87825c?q=80&w=3746&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+                // https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                height: "90vh",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                textAlign: "center",
+                position: "relative"
+            }}>
+                <h1 style={{ fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)" }}>
+                    We sell connection, with Product 
+                </h1>
+                <p style={{ fontSize: "1.2rem", textShadow: "1px 1px 3px rgba(0,0,0,0.4)" }}>
+                    Lets promote "RE-USE" and Save Earth
+                </p>
+                <button 
+                    onClick={toggleForm} 
+                    style={{ 
+                        marginTop: "20px",
+                        padding: "12px 24px", 
+                        backgroundColor: "grey", 
+                        // backgroundImage: "url('https://plus.unsplash.com/premium_photo-1683120931945-ae07bb87825c?q=80&w=3746&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
 
+                        color: "white", 
+                        border: "none", 
+                        borderRadius: "25px", 
+                        cursor: "pointer",
+                        fontSize: "1rem",
+                        transition: "0.3s ease"
+                        // textAlign: "center",
+                        //  marginBottom: "50px", color: "white", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)"
+                        
+                    }}
+                >
+                    {showForm ? "Close Form" : "Submit My Product"}
+                </button>
+            </div>
+
+            {/* Product Submission Form */}
             {showForm && (
-                <div style={{ width: "30%", padding: "20px", marginBottom: "20px" }}>
-                    <h2>Sell Your Product Here</h2>
-                    <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: "15px" }}>
-                            <label>Product Name:</label>
-                            <input
-                                type="text"
-                                value={productName}
-                                onChange={(e) => setProductName(e.target.value)}
-                                required
-                                style={{ width: "100%", padding: "8px" }}
-                            />
-                        </div>
-                        <div style={{ marginBottom: "15px" }}>
-                            <label>Suitable Season:</label>
-                            <select
-                                value={suitableSeason}
-                                onChange={(e) => setSuitableSeason(e.target.value)}
-                                required
-                                style={{ width: "100%", padding: "8px" }}
-                            >
-                                <option value="">Select a season</option>
-                                <option value="spring">Spring</option>
-                                <option value="summer">Summer</option>
-                                <option value="autumn">Autumn</option>
-                                <option value="winter">Winter</option>
-                            </select>
-                        </div>
-                        <div style={{ marginBottom: "15px" }}>
-                            <label>Description:</label>
-                            <textarea
-                                value={productDescription}
-                                onChange={(e) => setProductDescription(e.target.value)}
-                                required
-                                style={{ width: "100%", padding: "8px", height: "100px" }}
-                            />
-                        </div>
-                        <div style={{ marginBottom: "15px" }}>
-                            <label>Upload Image:</label>
-                            <input
-                                type="file"
-                                onChange={handleImageUpload}
-                                required
-                                style={{ width: "100%", padding: "8px" }}
-                            />
-                        </div>
-                        <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: "5px" }}>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    // marginTop: "30px",
+                    padding: "100px 300px",
+                    // backgroundColor: "#f5f5f5",
+                    backgroundImage: "url('https://images.unsplash.com/photo-1629194898512-b6b8697063ac?q=80&w=3462&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3DD')"
+                }}>
+                    <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+                        <h2 style={{ textAlign: "centre", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)", marginBottom: "15px", color: "white" }}>Sell Your Product Here</h2>
+                        <label style={{ color: "white" }}>Product Name:</label>
+                        {/* <option value="">Select a season</option> */}
+                        <input
+                            type="text"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                            required
+                            style={{ width: "100%", padding: "8px",borderRadius: "25px",  marginBottom: "10px" }}
+                        />
+                        <label style={{ color: "white", borderRadius: "25px" }}>Suitable Season:</label>
+                        <select
+                            value={suitableSeason}
+                            onChange={(e) => setSuitableSeason(e.target.value)}
+                            required
+                            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                        >
+                            <option value="">Select a season</option>
+                            <option value="spring">Spring</option>
+                            <option value="summer">Summer</option>
+                            <option value="autumn">Autumn</option>
+                            <option value="winter">Winter</option>
+                        </select>
+                        <label style={{ color: "white",borderRadius: "25px",  }}>Description:</label>
+                        <textarea
+                            value={productDescription}
+                            onChange={(e) => setProductDescription(e.target.value)}
+                            required
+                            style={{ width: "100%", padding: "8px",borderRadius: "25px",  height: "100px", marginBottom: "10px" }}
+                        />
+                        <label style={{ color: "white" }}>Upload Image:</label>
+                        <input
+                            type="file"
+                            onChange={handleImageUpload}
+                            required
+                            style={{ width: "100%", padding: "8px",borderRadius: "25px",  marginBottom: "10px", color: "white"  }}
+                        />
+                        <button type="submit" style={{
+                            width: "10%",
+                            padding: "10px",
+                            alignItems: "centre",
+                            borderRadius: "25px",
+                            backgroundColor: "grey",
+                            color: "white",
+                            border: "none",
+                            // borderRadius: "5px"
+                        }}>
                             Submit
                         </button>
                     </form>
                 </div>
             )}
 
-            {!showForm && (
-                <div style={{ width: "70%", padding: "20px", textAlign: "center" }}>
-                    <TabsComponent />
-                    
-                    <div style={{ marginBottom: "20px" }}>
-                        <h2>Seasons/Category</h2>
-                    </div>
-
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        {seasons.map((season) => (
-                            <div
-                                key={season.id}
-                                style={{
-                                    width: "300px",
-                                    margin: "20px 0",  
-                                    cursor: "pointer",
-                                    textAlign: "center",
-                                }}
-                                onClick={() => handleSeasonClick(season.title.toLowerCase())}
-                            >
-                                <img
-                                    src={season.image}
-                                    alt={season.title}
-                                    style={{
-                                        width: "100%",
-                                        height: "200px", 
-                                        objectFit: "cover", 
-                                        borderRadius: "8px", 
-                                    }}
-                                />
-                                <h3 style={{ marginTop: "10px", color: "#333" }}>{season.title}</h3>
-                            </div>
-                        ))}
-                    </div>
+            {/* Seasons Category Section */}
+            <div style={{
+                // backgroundColor: "#111",
+                display: "",
+                justifyContent: "center",
+                alignItems: "center",
+                // marginTop: "30px",
+                padding: "75px 75px 200px 75px",
+                backgroundImage: "url('https://images.unsplash.com/photo-1700836548081-2e8a10a24519?q=80&w=3732&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
+                // color: "white",
+                // padding: "200px",
+                // textAlign: "center"
+            }}>
+                <h1 style={{ textAlign: "center", marginBottom: "50px", color: "white", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)" }}>Explore Exclusive Poducts</h1>
+                {/* <h2 style={{ textAlign: "center", marginBottom: "15px", color: "white" }}>Sell Your Product Here</h2> */}
+                <p style={{ textAlign: "center", marginBottom: "100px", color: "white"}}>
+                    Sustainable practices can significantly reduce our carbon footprint.
+                </p>
+                <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                    gap: "40px",
+                    justifyContent: "center"
+                }}>
+                    {seasons.map((season) => (
+                        <div key={season.id} onClick={() => handleSeasonClick(season.title.toLowerCase())} 
+                            style={{
+                                backgroundColor: "white",
+                                padding: "20px",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                transition: "0.3s ease",
+                                textAlign: "center"
+                            }}>
+                            <img src={season.image} alt={season.title} style={{ width: "100%", height: "150px", objectFit: "cover", borderRadius: "5px", color: "white" }} />
+                            <h3 style={{ marginTop: "15px", color: "grey"  }}>{season.title}</h3>
+                        </div>
+                    ))}
                 </div>
-            )}
+            </div>
+
             <Footer/>
         </div>
     );
 }
 
 export default Dashboard;
+
