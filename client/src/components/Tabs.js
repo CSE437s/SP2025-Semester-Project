@@ -45,7 +45,7 @@ function TabsComponent() {
     };
 
     return (
-        <AppBar position="fixed" sx={{ backgroundColor: "grey", borderRadius: "40px", marginTop: "10px"}}>
+        <AppBar position="fixed" sx={{ borderColor: "rgba(50, 115, 220, 0.3)", backgroundColor: "rgba(0,0,0,0.5)", borderRadius: "40px", marginTop: "10px"}}>
             <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                 {/* Logo */}
                 <Box sx={{ display: "flex", alignItems: "center" }}>

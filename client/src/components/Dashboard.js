@@ -7,6 +7,7 @@ import summerImage from '../image/summer.PNG';
 import autumnImage from '../image/autumn.PNG';
 import winterImage from '../image/winter.PNG';
 import Footer from "./Footer";
+import { getOpacity } from "@mui/material/styles/createColorScheme";
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -104,9 +105,14 @@ function Dashboard() {
             {/* Hero Section */}
             <TabsComponent />
             <div style={{
-                backgroundImage: "url('https://plus.unsplash.com/premium_photo-1683120931945-ae07bb87825c?q=80&w=3746&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+                // backgroundImage: "url('https://images.unsplash.com/photo-1633786042135-cb9547757f92?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+                backgroundImage: "url('https://images.unsplash.com/photo-1735822081256-bc72ef6cbe59?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
                 // https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
                 backgroundSize: "cover",
+                height: "100vh",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "cover",
                 backgroundPosition: "center",
                 height: "90vh",
                 display: "flex",
@@ -114,6 +120,7 @@ function Dashboard() {
                 alignItems: "center",
                 justifyContent: "center",
                 color: "white",
+                // stroke: "GrayText",
                 textAlign: "center",
                 position: "relative"
             }}>
@@ -128,18 +135,13 @@ function Dashboard() {
                     style={{ 
                         marginTop: "20px",
                         padding: "12px 24px", 
-                        backgroundColor: "grey", 
-                        // backgroundImage: "url('https://plus.unsplash.com/premium_photo-1683120931945-ae07bb87825c?q=80&w=3746&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
-
+                        backgroundColor: "transparent", 
                         color: "white", 
-                        border: "none", 
                         borderRadius: "25px", 
+                        borderColor: "grey",
                         cursor: "pointer",
                         fontSize: "1rem",
-                        transition: "0.3s ease"
-                        // textAlign: "center",
-                        //  marginBottom: "50px", color: "white", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)"
-                        
+                        transition: "0.3s ease"                        
                     }}
                 >
                     {showForm ? "Close Form" : "Submit My Product"}
@@ -155,25 +157,27 @@ function Dashboard() {
                     // marginTop: "30px",
                     padding: "100px 300px",
                     // backgroundColor: "#f5f5f5",
-                    backgroundImage: "url('https://images.unsplash.com/photo-1629194898512-b6b8697063ac?q=80&w=3462&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3DD')"
+                    backgroundImage: "url('https://images.unsplash.com/photo-1704924524043-553d46db5ce5?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
                 }}>
+                    {/* <div> */}
                     <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-                        <h2 style={{ textAlign: "centre", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)", marginBottom: "15px", color: "white" }}>Sell Your Product Here</h2>
-                        <label style={{ color: "white" }}>Product Name:</label>
+                        <h2 style={{  fontSize: "2.5rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)", marginBottom: "15px", color: "white" }}>Post Product Here</h2>
+                        <label style={{ color: "white" }}>Product Name: </label>
                         {/* <option value="">Select a season</option> */}
                         <input
                             type="text"
                             value={productName}
                             onChange={(e) => setProductName(e.target.value)}
                             required
-                            style={{ width: "100%", padding: "8px",borderRadius: "25px",  marginBottom: "10px" }}
+                            style={{ width: "40%", padding: "8px",borderRadius: "25px",  marginBottom: "25px", marginRight: "20px" }}
                         />
-                        <label style={{ color: "white", borderRadius: "25px" }}>Suitable Season:</label>
+                        <br></br>
+                        <label style={{ color: "white", borderRadius: "25px", borderColor: "grey" }}>Select Season: </label>
                         <select
                             value={suitableSeason}
                             onChange={(e) => setSuitableSeason(e.target.value)}
                             required
-                            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+                            style={{ width: "41.5%", padding: "8px", marginBottom: "25px", marginRight: "20px" }}
                         >
                             <option value="">Select a season</option>
                             <option value="spring">Spring</option>
@@ -181,13 +185,15 @@ function Dashboard() {
                             <option value="autumn">Autumn</option>
                             <option value="winter">Winter</option>
                         </select>
-                        <label style={{ color: "white",borderRadius: "25px",  }}>Description:</label>
+                        <br></br>
+                        <label style={{ color: "white",borderRadius: "25px", position: "absolute"  }}>Description:</label>
                         <textarea
                             value={productDescription}
                             onChange={(e) => setProductDescription(e.target.value)}
                             required
-                            style={{ width: "100%", padding: "8px",borderRadius: "25px",  height: "100px", marginBottom: "10px" }}
+                            style={{ width: "40%", padding: "8px",borderRadius: "25px", borderColor: "grey",  height: "100px", marginBottom: "25px", marginLeft: "96px" }}
                         />
+                        <br></br>
                         <label style={{ color: "white" }}>Upload Image:</label>
                         <input
                             type="file"
@@ -196,18 +202,26 @@ function Dashboard() {
                             style={{ width: "100%", padding: "8px",borderRadius: "25px",  marginBottom: "10px", color: "white"  }}
                         />
                         <button type="submit" style={{
-                            width: "10%",
-                            padding: "10px",
-                            alignItems: "centre",
-                            borderRadius: "25px",
-                            backgroundColor: "grey",
-                            color: "white",
-                            border: "none",
-                            // borderRadius: "5px"
+                            marginTop: "20px",
+                            padding: "12px 24px", 
+                            backgroundColor: "transparent", 
+                            color: "white", 
+                            borderRadius: "25px", 
+                            borderColor: "grey",
+                            cursor: "pointer",
+                            fontSize: "1rem",
+                            transition: "0.3s ease" 
                         }}>
                             Submit
                         </button>
                     </form>
+                    {/* </div>
+                    <div>
+                        <h3>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+</h3>
+                    </div> */}
+
                 </div>
             )}
 
@@ -219,8 +233,11 @@ function Dashboard() {
                 alignItems: "center",
                 // marginTop: "30px",
                 padding: "75px 75px 200px 75px",
-                backgroundImage: "url('https://images.unsplash.com/photo-1700836548081-2e8a10a24519?q=80&w=3732&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"
+                // backgroundImage: "url('https://images.unsplash.com/photo-1633786042135-cb9547757f92?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+                backgroundImage: "url('https://images.unsplash.com/photo-1735822081256-bc72ef6cbe59?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+
                 // color: "white",
+                // transform: 'rotate(180deg)'
                 // padding: "200px",
                 // textAlign: "center"
             }}>
@@ -233,12 +250,22 @@ function Dashboard() {
                     display: "grid",
                     gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
                     gap: "40px",
-                    justifyContent: "center"
+                    justifyContent: "center",
+                    // marginTop: "20px",
+                    // padding: "12px 24px", 
+                    backgroundColor: "transparent", 
+                    color: "white", 
+                    borderRadius: "25px", 
+                    borderColor: "grey",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    transition: "0.3s ease" 
                 }}>
                     {seasons.map((season) => (
                         <div key={season.id} onClick={() => handleSeasonClick(season.title.toLowerCase())} 
                             style={{
-                                backgroundColor: "white",
+                                backgroundColor: "silver",
+                                // background: getOpacity,
                                 padding: "20px",
                                 borderRadius: "8px",
                                 cursor: "pointer",
