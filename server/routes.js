@@ -478,6 +478,7 @@ router.post('/trade/request', authenticateToken, (req, res) => {
 });
 
 //eBay API
+  
 router.get('/ebay', async (req, res) => {
     try {
         const { keywords } = req.query;
@@ -485,6 +486,7 @@ router.get('/ebay', async (req, res) => {
             return res.status(400).json({ error: 'Keywords parameter is required' });
         }
 
+        // Fetch multiple results (e.g., top 5)
         const response = await axios.get('https://svcs.sandbox.ebay.com/services/search/FindingService/v1', {
             params: {
                 'OPERATION-NAME': 'findItemsByKeywords',
@@ -492,18 +494,22 @@ router.get('/ebay', async (req, res) => {
                 'SECURITY-APPNAME': 'DeyuanYa-CSE437Ke-SBX-4dec84694-700e3e2a', // Sandbox App ID
                 'RESPONSE-DATA-FORMAT': 'JSON',
                 'keywords': keywords,
-                'paginationInput.entriesPerPage': 1
+                'paginationInput.entriesPerPage': 5 // Fetch top 5 results
             }
         });
 
-        console.log(response.data);
-
-        
+        console.log('eBay API Response:', response.data);
 
         const items = response.data.findItemsByKeywordsResponse[0].searchResult[0].item;
         if (items && items.length > 0) {
-            const itemPrice = items[0].sellingStatus[0].currentPrice[0].__value__;
-            res.json({ price: itemPrice });
+            // Calculate the average price of the top results
+            const totalPrice = items.reduce((sum, item) => {
+                const price = parseFloat(item.sellingStatus[0].currentPrice[0].__value__);
+                return sum + price;
+            }, 0);
+
+            const averagePrice = (totalPrice / items.length).toFixed(2); // Round to 2 decimal places
+            res.json({ price: averagePrice });
         } else {
             res.status(404).json({ error: 'No items found on eBay' });
         }
@@ -512,6 +518,3 @@ router.get('/ebay', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch eBay data', details: error.response?.data || error.message });
     }
 });
-  
-  
-  
