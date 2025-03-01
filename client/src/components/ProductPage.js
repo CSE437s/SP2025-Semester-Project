@@ -13,9 +13,31 @@ function ProductPage() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [coinAmount, setCoinAmount] = useState(0);
 
-    const handleTradeClick = (product) => {
+    const handleTradeClick = async (product) => {
         setSelectedProduct(product);
         setShowModal(true);
+    
+        try {
+            const response = await axios.get('http://localhost:8080/api/ebay', {
+                params: {
+                    keywords: product.product_name
+                }
+            });
+    
+            console.log('eBay API Response:', response.data);
+    
+            // Handle the simplified response
+            if (response.data.price) {
+                setSelectedProduct(prevProduct => ({
+                    ...prevProduct,
+                    ebayPrice: response.data.price
+                }));
+            } else {
+                console.log('No price found for:', product.product_name);
+            }
+        } catch (error) {
+            console.error('Error fetching eBay product price:', error);
+        }
     };
 
     const handleCloseModal = () => {
@@ -170,6 +192,9 @@ function ProductPage() {
                     >
                         <h2>Trade Request</h2>
                         <p>Trading for: <strong>{selectedProduct?.product_name}</strong></p>
+                            {selectedProduct?.ebayPrice && (
+                                <p>Average eBay Price: <strong>${selectedProduct.ebayPrice}</strong></p>
+                            )}
                         <p>Enter the number of coins you would like to trade:</p>
                         <input
                             type="text" // Keep type as text for custom validation

@@ -6,6 +6,7 @@ const router = express.Router();
 const multer = require('multer');
 const app = express();
 const path = require('path');
+const axios=require('axios');
 
 // Middleware to authenticate tokens
 const authenticateToken = (req, res, next) => {
@@ -475,7 +476,42 @@ router.post('/trade/request', authenticateToken, (req, res) => {
         res.status(200).json({ coins: result[0].coins });
     });
 });
-  
+
+//eBay API
+router.get('/ebay', async (req, res) => {
+    try {
+        const { keywords } = req.query;
+        if (!keywords) {
+            return res.status(400).json({ error: 'Keywords parameter is required' });
+        }
+
+        const response = await axios.get('https://svcs.sandbox.ebay.com/services/search/FindingService/v1', {
+            params: {
+                'OPERATION-NAME': 'findItemsByKeywords',
+                'SERVICE-VERSION': '1.0.0',
+                'SECURITY-APPNAME': 'DeyuanYa-CSE437Ke-SBX-4dec84694-700e3e2a', // Sandbox App ID
+                'RESPONSE-DATA-FORMAT': 'JSON',
+                'keywords': keywords,
+                'paginationInput.entriesPerPage': 1
+            }
+        });
+
+        console.log(response.data);
+
+        
+
+        const items = response.data.findItemsByKeywordsResponse[0].searchResult[0].item;
+        if (items && items.length > 0) {
+            const itemPrice = items[0].sellingStatus[0].currentPrice[0].__value__;
+            res.json({ price: itemPrice });
+        } else {
+            res.status(404).json({ error: 'No items found on eBay' });
+        }
+    } catch (error) {
+        console.error('Error fetching eBay data:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to fetch eBay data', details: error.response?.data || error.message });
+    }
+});
   
   
   
