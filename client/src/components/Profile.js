@@ -39,6 +39,31 @@ function Profile() {
         fetchProducts();
     }, [navigate]);
 
+    
+
+    const getTimeSinceListed = (createdAt) => {
+        const createdDate = new Date(createdAt);
+        const now = new Date();
+        const timeDiff = Math.floor((now - createdDate) / 1000); // Difference in seconds
+    
+        if (timeDiff < 60) {
+            return `${timeDiff} seconds ago`;
+        } else if (timeDiff < 3600) {
+            return `${Math.floor(timeDiff / 60)} minutes ago`;
+        } else if (timeDiff < 86400) {
+            return `${Math.floor(timeDiff / 3600)} hours ago`;
+        } else if (timeDiff < 604800) {
+            return `${Math.floor(timeDiff / 86400)} days ago`;
+        } else if (timeDiff < 2629800) { // Approx. 1 month
+            return `${Math.floor(timeDiff / 604800)} weeks ago`;
+        } else if (timeDiff < 31557600) { // Approx. 1 year
+            return `${Math.floor(timeDiff / 2629800)} months ago`;
+        } else {
+            return `${Math.floor(timeDiff / 31557600)} years ago`;
+        }
+    };
+    
+
     const fetchPendingTrades = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -150,7 +175,8 @@ function Profile() {
     };
 
     return (
-        <div>
+        <div style={profilePageStyle}>
+        <div style={overlayStyle}></div> {/* Overlay for better text readability */}
             <TabsComponent />
             <div style={{ display: "flex", paddingTop: "64px" }}>
                 <Sidebar onManageProfileClick={() => setShowEditProfile(true)} />
@@ -203,25 +229,22 @@ function Profile() {
                             <table style={tableStyle}>
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        {/* <th>ID</th> */}
+                                        <th>Image</th>
                                         <th>Product Name</th>
                                         <th>Suitable Season</th>
                                         <th>Description</th>
-                                        <th>Image</th>
-                                        <th>Created At</th>
-                                        <th>Priced At</th>
-                                        <th>Trade Requests</th>
-                                        <th>Actions</th>
+                                        <th>Time Listed Since</th>
+                                        {/* <th>Priced At</th> */}
+                                        {/* <th>Trade Requests</th> */}
+                                        {/* <th>Actions</th> */}
                                         
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {products.map((product) => (
                                         <tr key={product.id}>
-                                            <td>{product.id}</td>
-                                            <td>{product.product_name}</td>
-                                            <td>{product.suitable_season}</td>
-                                            <td>{product.product_description}</td>
+                                            {/* <td>{product.id}</td> */}
                                             <td>
                                                 {product.product_image ? (
                                                     <img
@@ -233,9 +256,12 @@ function Profile() {
                                                     "No Image"
                                                 )}
                                             </td>
-                                            <td>{new Date(product.created_at).toLocaleDateString()}</td>
+                                            <td>{product.product_name}</td>
+                                            <td>{product.suitable_season}</td>
+                                            <td>{product.product_description}</td>
+                                            <td>{getTimeSinceListed(product.created_at)}</td>
                                             <td>{""}</td> {/* Priced At left blank as per instruction */}
-                                            <td>
+                                            {/* <td>
                                                 {product.trade_requests && product.trade_requests.length > 0 ? (
                                                     product.trade_requests.map((request) => (
                                                         <div key={request.id} style={{ marginBottom: "10px" }}>
@@ -277,7 +303,7 @@ function Profile() {
                                                 ) : (
                                                     <p>No Actions Available</p>
                                                 )}
-                                            </td>
+                                            </td> */}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -326,6 +352,51 @@ function Profile() {
     );
 }
 
+// const contentStyle = {
+//     marginLeft: "270px",
+//     flex: 1,
+//     padding: "20px",
+//     display: "flex",
+//     flexDirection: "column",
+//     alignItems: "center",
+//     textAlign: "center",
+// };
+
+// const tableStyle = {
+//     width: "80%",
+//     borderCollapse: "collapse",
+//     marginBottom: "20px",
+//     textAlign: "left",
+// };
+
+const profilePageStyle = {
+    backgroundImage: "url('https://images.unsplash.com/photo-1735822081256-bc72ef6cbe59?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed", // Keeps background fixed while scrolling
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingTop: "80px",
+    paddingBottom: "50px",
+    position: "relative",
+    zIndex: 1, // Ensures content is above the background
+};
+
+// Optional: Overlay for contrast (improves text readability)
+const overlayStyle = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.2)", // Dark overlay (adjust opacity if needed)
+    zIndex: -1, // Keeps the overlay behind content
+};
+
+// Keeps everything centered & clean
 const contentStyle = {
     marginLeft: "270px",
     flex: 1,
@@ -334,14 +405,74 @@ const contentStyle = {
     flexDirection: "column",
     alignItems: "center",
     textAlign: "center",
+    color: "#fff", // White text for better contrast against dark background
+    textShadow: "2px 2px 8px rgba(0, 0, 0, 0.5)",
+    fontFamily: "sans-serif",
 };
 
-const tableStyle = {
-    width: "80%",
-    borderCollapse: "collapse",
-    marginBottom: "20px",
-    textAlign: "left",
+// Table container with better spacing
+const tableContainerStyle = {
+    width: "100%",
+    marginTop: "20px",
+    display: "flex",
+    justifyContent: "center",
 };
+
+// Table styling with better column spacing
+const tableStyle = {
+    width: "85%",
+    borderCollapse: "separate",
+    borderSpacing: "20px 12px", // Adds spacing between columns & rows
+    textAlign: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.15)", // Lightened glassmorphism effect
+    backdropFilter: "blur(10px)",
+    borderRadius: "12px",
+    overflow: "hidden",
+    color: "#fff",
+    padding: "15px",
+    boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.25)", // Deeper shadow for depth
+};
+
+// Header row with modern styling
+const tableHeaderStyle = {
+    background: "rgba(0, 0, 0, 0.7)", // Darker header for contrast
+    color: "#FFD700", // Gold-colored text
+    fontSize: "20px",
+    padding: "18px",
+    textAlign: "center",
+};
+
+// Table row styling with increased row height
+const tableRowStyle = {
+    height: "70px", // More row height for spacing
+    transition: "all 0.3s ease-in-out",
+    textAlign: "center",
+    borderRadius: "12px",
+};
+
+// Hover effects for better readability
+const hoverRowStyle = {
+    transform: "scale(1.02)",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    boxShadow: "0px 6px 10px rgba(0, 0, 0, 0.15)",
+};
+
+// Image styling (larger size & spacing)
+const imageStyle = {
+    width: "75px",
+    height: "75px",
+    borderRadius: "10px",
+    transition: "transform 0.3s ease-in-out",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
+    margin: "5px",
+};
+
+
+const hoverImageStyle = {
+    transform: "scale(1.1)",
+};
+
+    
 
 const approveButton = {
     marginRight: "10px",
@@ -363,34 +494,83 @@ const declineButton = {
 };
 
 const editProfileContainer = {
-    width: "50%",
+    width: "35%", // Adjust width for a balanced look
+    maxWidth: "480px", // Prevent it from getting too wide
+    minWidth: "350px", // Ensures it doesn't shrink too much
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
-    padding: "30px",
-    borderRadius: "15px",
-    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.15)", // Transparent glass effect
+    backdropFilter: "blur(10px)", // Soft blur effect
+    padding: "50px 40px", // Balanced padding
+    borderRadius: "20px",
+    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)", // Depth shadow
+    textAlign: "center",
+    color: "#fff",
 };
 
+
+// Back Button Styling
 const backButton = {
-    marginBottom: "20px",
+    marginBottom: "25px",
     cursor: "pointer",
-    padding: "10px 20px",
-    border: "1px solid #007bff",
+    padding: "12px 24px",
+    border: "2px solid #007bff",
     borderRadius: "25px",
-    backgroundColor: "white",
+    backgroundColor: "rgba(255, 255, 255, 0.4)", // Transparent button
     color: "#007bff",
     fontWeight: "600",
+    fontSize: "16px",
     transition: "all 0.3s ease",
 };
 
-const notificationStyle = {
-    padding: "10px",
-    backgroundColor: "lightgreen",
-    color: "black",
-    borderRadius: "5px",
-    marginTop: "10px",
+// Hover effect for back button
+const backButtonHover = {
+    backgroundColor: "#007bff",
+    color: "white",
 };
+
+// Input field styling
+const inputFieldStyle = {
+    width: "100%",
+    padding: "12px",
+    border: "none",
+    borderRadius: "10px",
+    outline: "none",
+    backgroundColor: "rgba(255, 255, 255, 0.3)", // Semi-transparent
+    color: "#fff",
+    fontSize: "16px",
+    textAlign: "left",
+    marginBottom: "15px",
+};
+
+// Save Button Styling
+const saveButtonStyle = {
+    padding: "10px 18px",
+    border: "none",
+    borderRadius: "8px",
+    backgroundColor: "#28a745", // Green color for success action
+    color: "white",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    marginLeft: "10px",
+};
+
+// Adjusts hover effect for save button
+const saveButtonHover = {
+    backgroundColor: "#218838",
+};
+
+// Notification Message
+const notificationStyle = {
+    padding: "12px",
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    borderRadius: "8px",
+    fontWeight: "600",
+    marginTop: "15px",
+};
+
 
 export default Profile;
