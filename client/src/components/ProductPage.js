@@ -119,8 +119,10 @@ function ProductPage() {
     return (
         <div>
             <TabsComponent />
-            <div style={{ paddingTop: "64px", marginLeft: "15%", display: "flex", flexDirection: "row" }}>
-                <div style={{ width: "30%", padding: "20px" }}>
+            <div style={{ paddingTop: "64px", height:"100%",
+                backgroundImage: "url('https://images.unsplash.com/photo-1735822081256-bc72ef6cbe59?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+                display: "flex", flexDirection: "row" }}>
+                <div style={{ width: "100%", padding: "40px" }}>
                     <h2>{season.charAt(0).toUpperCase() + season.slice(1)} Products</h2>
                     <p>Browse the best products available for {season}.</p>
                 </div>
