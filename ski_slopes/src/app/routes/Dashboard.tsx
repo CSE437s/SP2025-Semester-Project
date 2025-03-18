@@ -1,145 +1,83 @@
-import { Suspense, useRef, useEffect, useState } from 'react';
-import { Canvas, useThree, useFrame  } from '@react-three/fiber';
-import { useGLTF, OrbitControls, Html, useProgress, GizmoHelper, GizmoViewport } from "@react-three/drei";
-import * as THREE from 'three';
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-
-// Preload the model so that it's cached on subsequent renders
-const availableModels = [
-    { name: "Jackson Hole", path: "/models/jackson-hole.glb" },
-    { name: "Telluride", path: "/models/telluride.glb" },
-    // { name: "Mt. Baker", path: "/models/mt-baker.glb" },
-    // { name: "Snowbird", path: "/models/snowbird.glb" }
-];
-
-// useGLTF.preload("/models/jackson-hole.glb");
-availableModels.forEach(model => {
-    useGLTF.preload(model.path);
-});
-
-const Loader: React.FC = () => {
-    const { progress } = useProgress();
-    return <Html center>{progress} % loaded</Html>;
-};
-
-const MountainModel: React.FC<{ modelPath: string }> = ({ modelPath }) => {
-    const { scene } = useGLTF(modelPath);
-    useEffect(() => {
-        // Center the model at origin
-        const box = new THREE.Box3().setFromObject(scene);
-        const center = box.getCenter(new THREE.Vector3());
-        scene.position.sub(center); 
-        scene.position.y += 50;
-        console.log("Model loaded:", modelPath, scene);
-    }, [scene, modelPath]);
-
-    return <primitive 
-        object={scene} 
-        scale={0.1}
-        position={[0, 0, 0]}
-        rotation={[Math.PI, 0, 0]}
-    />;
-};
-
-const CameraPosition = () => {
-    const { camera } = useThree();
-    useFrame(() => {
-        const pos = camera.position.toArray().map(n => n.toFixed(2));
-        const div = document.getElementById('camera-position');
-        if (div) {
-            div.textContent = `X: ${pos[0]} Y: ${pos[1]} Z: ${pos[2]}`;
-        }
-    });
-
-    return null;
-};
-
-const Scene: React.FC = () => {
-    const controlsRef = useRef<any>(null);
-
-    useEffect(() => {
-        if (controlsRef.current) {
-            controlsRef.current.reset();
-        }
-    }, []);
-
-    return (
-        <div className="col-span-8 h-full relative bg-[#202020]">
-            {/* Coordinate display overlay */}
-            <div id="camera-position" className="absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded font-mono z-10">
-                X: 0 Y: 0 Z: 0
-            </div>
-    
-            <Canvas
-                camera={{
-                    position: [363.77, 313.07, -369.16], 
-                    fov: 75,
-                    near: 0.1,
-                    far: 150000
-                }}
-            >
-                <Suspense fallback={<Loader />}>
-                    <gridHelper args={[10000, 10000]} position={[0, 0, 0]} />
-                    <ambientLight intensity={1} />
-                    <MountainModel modelPath="/models/jackson-hole.glb"/>
-                    {/* <MountainModel modelPath="/models/telluride.glb"/> */}
-                    <OrbitControls 
-                        ref={controlsRef} 
-                        target={[0, 0, 0]}
-                        minDistance={100}
-                        maxDistance={10000}
-                        enableRotate={true}
-                        // rotateSpeed={0.5}
-                        minPolarAngle={0}
-                        maxPolarAngle={Math.PI / 2}
-                        enableDamping={true}
-                        dampingFactor={0.25}
-                    />
-                    
-                    {/* X, Y, Z axis */}
-                    <GizmoHelper alignment="top-right" margin={[80, 80]}>
-                        <GizmoViewport axisColors={['#ff3653', '#0adb50', '#2c8fdf']} labelColor="black"/>
-                    </GizmoHelper>
-                    
-                    {/* Display current camera position */}
-                    <CameraPosition />
-                </Suspense>
-            </Canvas>
-        </div>
-    );
-};
-
+import { useWeatherStore } from "@/store/weatherStore";
 
 const Dashboard: React.FC = () => {
-    const ResizeHandle: React.FC = () => {
-        return (
-            <PanelResizeHandle className="w-2 group flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <div className="flex flex-col gap-1">
-                    <div className="w-1 h-screen rounded-full bg-gray-300 group-hover:bg-gray-400 transition-colors" />
-                </div>
-            </PanelResizeHandle>
-        );
+    const { weather, fetchWeather, isLoading } = useWeatherStore();
+
+    const handleFetchWeather = () => {
+        fetchWeather("Mt Baker, WA");
     };
+
     return (
-        <main className="h-[calc(100vh-3rem)] mt-12 w-full">
-            <PanelGroup direction="horizontal">
-                <Panel defaultSize={75} minSize={30}>
-                    <Scene />
-                </Panel>
+        <main className="min-h-screen w-full mt-12">
+            <div className="max-w-4xl mx-auto p-6">
+                <h1 className="text-3xl font-bold mb-6">Ski Weather Dashboard</h1>
                 
-                <ResizeHandle />
-                
-                <Panel defaultSize={25} minSize={20}>
-                    {/* Left half grid container */}
-                    <div className="h-full grid grid-rows-2">
-                        {/* Top half */}
-                        <div className="bg-[#202020] border-b border-gray-500">
-                        </div>
-                        {/* Bottom half */}
-                        <div className="bg-[#202020]"></div>
+                <div className="mb-6">
+                    <button 
+                        onClick={handleFetchWeather}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Loading..." : "Get Mt Baker Weather"}
+                    </button>
+                </div>
+
+                {isLoading ? (
+                    <div className="text-center py-10">
+                        <p className="text-lg">Loading weather data...</p>
                     </div>
-                </Panel>
-            </PanelGroup>
+                ) : weather ? (
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h2 className="text-2xl font-semibold mb-4">Mt Baker, WA</h2>
+                        <p className="text-lg mb-2">Date: {weather.date}</p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                                <h3 className="text-xl font-medium mb-2">Snow Conditions</h3>
+                                <p>Chance of Snow: {weather.snowfall_chance}%</p>
+                                <p>Expected Snowfall: {weather.snowfall_total}cm</p>
+                            </div>
+                            
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <h3 className="text-xl font-medium mb-2">Daylight</h3>
+                                {weather.astronomy && weather.astronomy[0] && (
+                                    <>
+                                        <p>Sunrise: {weather.astronomy[0].sunrise}</p>
+                                        <p>Sunset: {weather.astronomy[0].sunset}</p>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="mt-6">
+                            <h3 className="text-xl font-medium mb-3">Temperature</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-indigo-50 p-4 rounded-lg">
+                                    <h4 className="font-medium">Summit</h4>
+                                    <p>{weather.temperature.top.min_f}°F to {weather.temperature.top.max_f}°F</p>
+                                    <p className="text-gray-600">({weather.temperature.top.min_c}°C to {weather.temperature.top.max_c}°C)</p>
+                                </div>
+                                
+                                <div className="bg-indigo-50 p-4 rounded-lg">
+                                    <h4 className="font-medium">Mid-Mountain</h4>
+                                    <p>{weather.temperature.mid.min_f}°F to {weather.temperature.mid.max_f}°F</p>
+                                    <p className="text-gray-600">({weather.temperature.mid.min_c}°C to {weather.temperature.mid.max_c}°C)</p>
+                                </div>
+                                
+                                <div className="bg-indigo-50 p-4 rounded-lg">
+                                    <h4 className="font-medium">Base</h4>
+                                    <p>{weather.temperature.bottom.min_f}°F to {weather.temperature.bottom.max_f}°F</p>
+                                    <p className="text-gray-600">({weather.temperature.bottom.min_c}°C to {weather.temperature.bottom.max_c}°C)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center py-10 bg-gray-50 rounded-lg">
+                        <p className="text-lg">Click the button to fetch weather data</p>
+                    </div>
+                )}
+            </div>
         </main>
     );
 };

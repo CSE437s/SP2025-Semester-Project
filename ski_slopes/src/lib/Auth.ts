@@ -16,7 +16,6 @@ export async function loginWithGoogle() {
   return data; 
 }
 
-
 export async function getUser() {
   const { data, error } = await supabase.auth.getUser();
   if (error) {
@@ -27,9 +26,9 @@ export async function getUser() {
 }
 
 
-export async function logout() {
+export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) {
-    console.error("Logout failed:", error.message);
+    console.error("signout failed:", error.message);
   }
 }

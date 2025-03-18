@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
 import { Canvas, useThree, useFrame  } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Html, useProgress, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { Suspense, useState, useEffect } from 'react';
@@ -10,7 +10,6 @@ const availableModels = [
     // { name: "Snowbird", path: "/models/snowbird.glb" }
 ];
 
-// Remove the preload code from here
 const Loader: React.FC = () => {
     const { progress } = useProgress();
     return <Html center>{progress} % loaded</Html>;
@@ -67,6 +66,7 @@ const CameraPosition = () => {
 
 const Render: React.FC = () => {
     const [selectedModel, setSelectedModel] = useState(availableModels[0].path);
+    // Set the initial camera distance
     const [cameraDistance, setCameraDistance] = useState(40000);
 
     // Camera controls component that sets the initial camera position
@@ -106,6 +106,7 @@ const Render: React.FC = () => {
                         maxDistance={50000}
                         enableDamping={true}
                         dampingFactor={0.50}
+                        maxPolarAngle={Math.PI/2} // lock camera above horizon
                     />
                     <ambientLight intensity={1} />
                     <Model modelPath={selectedModel} />
@@ -113,12 +114,12 @@ const Render: React.FC = () => {
                     <GizmoHelper alignment="top-right" margin={[70, 70]}>
                         <GizmoViewport />
                     </GizmoHelper>
+
                     {/* Display current camera position */}
                     <CameraPosition />
                 </Suspense>
             </Canvas>
             <MountainDropdown onSelectModel={setSelectedModel} />
-            
         </main>
     );
 };

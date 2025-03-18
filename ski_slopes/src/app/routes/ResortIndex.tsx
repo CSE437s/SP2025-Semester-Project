@@ -72,7 +72,7 @@ const ResortIndex: React.FC = () => {
             </div>
 
             {/* Bottom half - resort cards */}
-            <div className="h-1/2 w-full border-t">
+            <div className="h-1/2 w-full">
                 <div className="h-full overflow-x-auto overflow-y-hidden">
                     <div className="flex gap-4 p-4 min-w-min h-full items-center">
                         {resortData.map((resort, index) => (
