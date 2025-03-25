@@ -241,7 +241,7 @@ function Dashboard() {
                 // padding: "200px",
                 // textAlign: "center"
             }}>
-                <h1 style={{ textAlign: "center", marginBottom: "50px", color: "white", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)" }}>Explore Exclusive Poducts</h1>
+                <h1 style={{ textAlign: "center", marginBottom: "50px", color: "white", fontSize: "3rem", fontWeight: "bold", textShadow: "2px 2px 5px rgba(0,0,0,0.5)" }}>Explore Exclusive Products</h1>
                 {/* <h2 style={{ textAlign: "center", marginBottom: "15px", color: "white" }}>Sell Your Product Here</h2> */}
                 <p style={{ textAlign: "center", marginBottom: "100px", color: "white"}}>
                     Sustainable practices can significantly reduce our carbon footprint.
