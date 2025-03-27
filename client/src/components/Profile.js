@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "./Sidebar";
 import TabsComponent from "./Tabs";
+import Messages from "./Message";
+import { FaEnvelope } from 'react-icons/fa';
 import Footer from "./Footer";
+import { jwtDecode } from "jwt-decode";
 
 function Profile() {
     const navigate = useNavigate();
@@ -15,8 +18,21 @@ function Profile() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [notification, setNotification] = useState(null);
+    const [showMessages, setShowMessages] = useState(false);
+    const [userId, setUserId] = useState(null);
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            const decoded = jwtDecode(token);
+            if (decoded) {
+                setUserId(decoded.id);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+
         const fetchProducts = async () => {
             try {
                 const token = localStorage.getItem("token");
@@ -185,6 +201,29 @@ function Profile() {
                         <>
 
 <div>
+<button 
+    onClick={() => setShowMessages(true)}
+    style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        backgroundColor: '#4CAF50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '50%',
+        width: '60px',
+        height: '60px',
+        fontSize: '24px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+        zIndex: 100
+    }}
+>
+    <FaEnvelope />
+</button>
     <h2>Pending Trade Requests</h2>
     {pendingTrades.length > 0 ? (
         <table style={tableStyle}>
@@ -347,6 +386,46 @@ function Profile() {
                     )}
                 </div>
             </div>
+            {showMessages && (
+    <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+    }}>
+        <div style={{
+            width: '80%',
+            height: '80%',
+            backgroundColor: 'rgba(30, 30, 30, 0.9)',
+            borderRadius: '10px',
+            padding: '20px',
+            position: 'relative'
+        }}>
+            <button 
+                onClick={() => setShowMessages(false)}
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '20px',
+                    cursor: 'pointer'
+                }}
+            >
+                ×
+            </button>
+            <Messages userId={userId} />
+        </div>
+    </div>
+)}
             <Footer/>
         </div>
     );

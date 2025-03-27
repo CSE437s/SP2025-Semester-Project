@@ -8,6 +8,8 @@ const app = express();
 const path = require('path');
 const axios=require('axios');
 
+
+
 // Middleware to authenticate tokens
 const authenticateToken = (req, res, next) => {
     const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
@@ -516,5 +518,184 @@ router.get('/ebay', async (req, res) => {
     } catch (error) {
         console.error('Error fetching eBay data:', error.response?.data || error.message);
         res.status(500).json({ error: 'Failed to fetch eBay data', details: error.response?.data || error.message });
+    }
+});
+
+
+// Send Message
+router.post('/messages/send', authenticateToken, upload.single('image'), async (req, res) => {
+    const { receiverId, productId } = req.body;
+    const senderId = req.user.id;
+    const content = req.body.content || '';
+    const message_type = req.file ? 'image' : 'text';
+    const image_path = req.file ? req.file.path : null;
+
+    try {
+        const [result] = await db.promise().query(
+            "INSERT INTO messages (sender_id, receiver_id, product_id, content, message_type, image_path) VALUES (?, ?, ?, ?, ?, ?)",
+            [senderId, receiverId, productId || null, content, message_type, image_path]
+        );
+
+        res.status(201).json({ 
+            message: 'Message sent successfully',
+            messageId: result.insertId 
+        });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+// Get Messages for Current User
+router.get('/messages', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        // Get all messages where current user is either sender or receiver
+        const [messages] = await db.promise().query(`
+            SELECT m.*, 
+                   u_sender.username as sender_username,
+                   u_receiver.username as receiver_username,
+                   p.product_name, p.product_image
+            FROM messages m
+            LEFT JOIN users u_sender ON m.sender_id = u_sender.id
+            LEFT JOIN users u_receiver ON m.receiver_id = u_receiver.id
+            LEFT JOIN products p ON m.product_id = p.id
+            WHERE m.sender_id = ? OR m.receiver_id = ?
+            ORDER BY m.created_at DESC
+        `, [userId, userId]);
+
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
+// Get Conversation between Two Users (optionally about a product)
+// Update your conversation fetching endpoint
+router.get('/messages/conversation/:otherUserId', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    const otherUserId = req.params.otherUserId;
+    const { productId } = req.query;
+
+    try {
+        let query = `
+            SELECT m.*, 
+                   u_sender.username as sender_username,
+                   u_receiver.username as receiver_username,
+                   p.product_name
+            FROM messages m
+            LEFT JOIN users u_sender ON m.sender_id = u_sender.id
+            LEFT JOIN users u_receiver ON m.receiver_id = u_receiver.id
+            LEFT JOIN products p ON m.product_id = p.id
+            WHERE ((m.sender_id = ? AND m.receiver_id = ?) 
+                   OR (m.sender_id = ? AND m.receiver_id = ?))
+        `;
+        const queryParams = [userId, otherUserId, otherUserId, userId];
+
+        if (productId) {
+            query += ' AND m.product_id = ?';
+            queryParams.push(productId);
+        }
+
+        query += ' ORDER BY m.created_at ASC';
+
+        const [messages] = await db.promise().query(query, queryParams);
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching conversation:', error);
+        res.status(500).json({ error: 'Failed to fetch conversation' });
+    }
+});
+// Mark Message as Read
+router.put('/messages/:messageId/read', authenticateToken, async (req, res) => {
+    const messageId = req.params.messageId;
+    const userId = req.user.id;
+
+    try {
+        // Verify the message exists and the user is the receiver
+        const [message] = await db.promise().query(
+            'SELECT * FROM messages WHERE id = ? AND receiver_id = ?',
+            [messageId, userId]
+        );
+
+        if (message.length === 0) {
+            return res.status(404).json({ error: 'Message not found or unauthorized' });
+        }
+
+        // Update message as read
+        await db.promise().query(
+            'UPDATE messages SET is_read = TRUE WHERE id = ?',
+            [messageId]
+        );
+
+        res.status(200).json({ message: 'Message marked as read' });
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        res.status(500).json({ error: 'Failed to mark message as read' });
+    }
+});
+
+// Get Unread Message Count
+router.get('/messages/unread-count', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const [result] = await db.promise().query(
+            'SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = FALSE',
+            [userId]
+        );
+
+        res.status(200).json({ count: result[0].count });
+    } catch (error) {
+        console.error('Error fetching unread message count:', error);
+        res.status(500).json({ error: 'Failed to fetch unread message count' });
+    }
+});
+
+// Mark multiple messages as read
+router.put('/messages/mark-read', authenticateToken, async (req, res) => {
+    const { senderId, productId } = req.body;
+    const receiverId = req.user.id;
+
+    try {
+        let query = 'UPDATE messages SET is_read = TRUE WHERE sender_id = ? AND receiver_id = ?';
+        const params = [senderId, receiverId];
+
+        if (productId) {
+            query += ' AND product_id = ?';
+            params.push(productId);
+        }
+
+        await db.promise().query(query, params);
+        res.status(200).json({ message: 'Messages marked as read' });
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+        res.status(500).json({ error: 'Failed to mark messages as read' });
+    }
+});
+
+router.get('/messages/conversations', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const [conversations] = await db.promise().query(`
+            SELECT m.*, 
+                   u_sender.username as sender_username,
+                   u_receiver.username as receiver_username,
+                   p.product_name
+            FROM messages m
+            LEFT JOIN users u_sender ON m.sender_id = u_sender.id
+            LEFT JOIN users u_receiver ON m.receiver_id = u_receiver.id
+            LEFT JOIN products p ON m.product_id = p.id
+            WHERE m.sender_id = ? OR m.receiver_id = ?
+            ORDER BY m.created_at DESC
+        `, [userId, userId]);
+
+        res.status(200).json(conversations);
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        res.status(500).json({ error: 'Failed to fetch conversations' });
     }
 });

@@ -12,6 +12,8 @@ function ProductPage() {
     const [showModal, setShowModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [coinAmount, setCoinAmount] = useState(0);
+    const [showMessageModal, setShowMessageModal] = useState(false);
+    const [messageContent, setMessageContent] = useState("");
 
     const handleTradeClick = async (product) => {
         setSelectedProduct(product);
@@ -26,7 +28,6 @@ function ProductPage() {
     
             console.log('eBay API Response:', response.data);
     
-            // Handle the simplified response
             if (response.data.price) {
                 setSelectedProduct(prevProduct => ({
                     ...prevProduct,
@@ -40,25 +41,55 @@ function ProductPage() {
         }
     };
 
+    const handleMessageClick = (product) => {
+        setSelectedProduct(product);
+        setShowMessageModal(true);
+    };
+
+    const handleSendMessage = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                'http://localhost:8080/api/messages/send',
+                {
+                    receiverId: selectedProduct.owner_id,
+                    productId: selectedProduct.id,
+                    content: messageContent
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            
+            alert('Message sent successfully!');
+            setShowMessageModal(false);
+            setMessageContent("");
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again.');
+        }
+    };
+
     const handleCloseModal = () => {
         setShowModal(false);
         setSelectedProduct(null);
         setCoinAmount(0);
     };
 
+    const handleCloseMessageModal = () => {
+        setShowMessageModal(false);
+        setSelectedProduct(null);
+        setMessageContent("");
+    };
+
     const handleTradeSubmit = async () => {
         try {
-            const token = localStorage.getItem('token'); // Retrieve token for authentication
-            const receiverId = selectedProduct.owner_id; // ID of the item owner
-            const requestedItemId = selectedProduct.id; // ID of the item being requested
-            const coinsOffered = coinAmount; // Number of coins offered
-    
-            // Log the payload for debugging
-            console.log('Sending payload:', {
-                receiverId,
-                requestedItemId,
-                coinsOffered,
-            });
+            const token = localStorage.getItem('token');
+            const receiverId = selectedProduct.owner_id;
+            const requestedItemId = selectedProduct.id;
+            const coinsOffered = coinAmount;
     
             const response = await axios.post(
                 'http://localhost:8080/api/trade/request',
@@ -69,7 +100,7 @@ function ProductPage() {
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, // Send token for authentication
+                        Authorization: `Bearer ${token}`,
                     },
                 }
             );
@@ -80,7 +111,7 @@ function ProductPage() {
         } catch (error) {
             console.error('Error submitting trade request:', error);
             if (error.response && error.response.data.error) {
-                alert(error.response.data.error); // Display the error message from the backend
+                alert(error.response.data.error);
             } else {
                 alert('Failed to submit trade request. Please try again.');
             }
@@ -146,20 +177,36 @@ function ProductPage() {
                                     <p style={{ fontSize: "14px", color: "#555" }}>
                                         <strong>Description:</strong> {product.product_description}
                                     </p>
-                                    <button
-                                        onClick={() => handleTradeClick(product)}
-                                        style={{
-                                            marginTop: "10px",
-                                            padding: "10px 20px",
-                                            backgroundColor: "#4CAF50",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "5px",
-                                            cursor: "pointer",
-                                        }}
-                                    >
-                                        Trade
-                                    </button>
+                                    <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+                                        <button
+                                            onClick={() => handleTradeClick(product)}
+                                            style={{
+                                                padding: "10px 20px",
+                                                backgroundColor: "#4CAF50",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "5px",
+                                                cursor: "pointer",
+                                                flex: 1
+                                            }}
+                                        >
+                                            Trade
+                                        </button>
+                                        <button
+                                            onClick={() => handleMessageClick(product)}
+                                            style={{
+                                                padding: "10px 20px",
+                                                backgroundColor: "#2196F3",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "5px",
+                                                cursor: "pointer",
+                                                flex: 1
+                                            }}
+                                        >
+                                            Message
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         ) : (
@@ -199,11 +246,10 @@ function ProductPage() {
                             )}
                         <p>Enter the number of coins you would like to trade:</p>
                         <input
-                            type="text" // Keep type as text for custom validation
+                            type="text"
                             value={coinAmount}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                // Check if the value is a positive integer
                                 if (/^[1-9]\d*$|^0$/.test(value) || value === "") {
                                     setCoinAmount(value);
                                 }
@@ -250,9 +296,80 @@ function ProductPage() {
                     </div>
                 </div>
             )}
-        <Footer/>
+
+            {showMessageModal && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: "white",
+                            padding: "30px",
+                            borderRadius: "8px",
+                            width: "400px",
+                            textAlign: "center",
+                        }}
+                    >
+                        <h2>Message Owner</h2>
+                        <p>About: <strong>{selectedProduct?.product_name}</strong></p>
+                        <textarea
+                            value={messageContent}
+                            onChange={(e) => setMessageContent(e.target.value)}
+                            placeholder="Type your message here..."
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                margin: "10px 0",
+                                borderRadius: "5px",
+                                border: "1px solid #ddd",
+                                minHeight: "100px",
+                            }}
+                        />
+                        <button
+                            onClick={handleSendMessage}
+                            style={{
+                                marginTop: "10px",
+                                padding: "10px 20px",
+                                backgroundColor: "#2196F3",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                                width: "100%",
+                            }}
+                        >
+                            Send Message
+                        </button>
+                        <button
+                            onClick={handleCloseMessageModal}
+                            style={{
+                                marginTop: "10px",
+                                padding: "10px 20px",
+                                backgroundColor: "#f44336",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                                width: "100%",
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+            <Footer/>
         </div>
-        
     );
 }
 
