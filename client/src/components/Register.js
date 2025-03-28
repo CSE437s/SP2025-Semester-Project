@@ -52,13 +52,9 @@ function Register() {
                     onChange={handleChange}
                     required
                 />
-                <Button type="submit" variant="contained" color="primary" fullWidth
-                style={{marginBottom:'25px'}}
-                >
+                <Button type="submit" variant="contained" color="primary" fullWidth>
                     Register
                 </Button>
-
-                <a href="http://localhost:3000/login" >Already have an account</a>
             </form>
             <Footer/>
         </Container>

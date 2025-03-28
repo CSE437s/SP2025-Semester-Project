@@ -33,9 +33,7 @@ function Login() {
     return (
         <Container maxWidth="sm">
             <Typography variant="h4">Login</Typography>
-            <form onSubmit={handleSubmit}
-            
-            >
+            <form onSubmit={handleSubmit}>
                 <TextField
                     fullWidth
                     margin="normal"
@@ -54,13 +52,9 @@ function Login() {
                     onChange={handleChange}
                     required
                 />
-                
-                <Button type="submit" variant="contained" color="primary" fullWidth
-                style={{marginBottom:'25px'}}
-                >
+                <Button type="submit" variant="contained" color="primary" fullWidth>
                     Login
                 </Button>
-                <a href="http://localhost:3000/register" >Forgot Password?</a>
             </form>
             <Footer/>
         </Container>
