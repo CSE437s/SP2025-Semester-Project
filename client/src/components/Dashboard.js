@@ -531,7 +531,7 @@ function Dashboard() {
         className="hero-section animate-fade-in"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1507099985932-87a4520ed1d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')",
+            "url('https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
