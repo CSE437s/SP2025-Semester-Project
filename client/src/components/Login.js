@@ -1,75 +1,9 @@
-// import React, { useState } from "react";
-// import { TextField, Button, Container, Typography } from "@mui/material";
-// import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-// import Footer from "./Footer"; // Adjust the path based on your folder structure
-
-// function Login() {
-//     const [form, setForm] = useState({ email: "", password: "" });
-//     const navigate = useNavigate();
-
-//     const handleChange = (e) => {
-//         setForm({ ...form, [e.target.name]: e.target.value });
-//     };
-
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-
-//         try {
-//             const response = await axios.post("http://localhost:8080/api/login", form); // Pointing to backend
-//             alert(response.data.message);
-
-//             // Save token to localStorage
-//             localStorage.setItem("token", response.data.token);
-
-//             // Redirect to dashboard
-//             navigate("/dashboard");
-//         } catch (error) {
-//             console.error("Login error:", error);
-//             alert(error.response?.data?.message || "Login failed. Please try again.");
-//         }
-//     };
-
-//     return (
-//         <Container maxWidth="sm">
-//             <Typography variant="h4">Login</Typography>
-//             <form onSubmit={handleSubmit}>
-//                 <TextField
-//                     fullWidth
-//                     margin="normal"
-//                     label="Email"
-//                     name="email"
-//                     type="email"
-//                     onChange={handleChange}
-//                     required
-//                 />
-//                 <TextField
-//                     fullWidth
-//                     margin="normal"
-//                     label="Password"
-//                     name="password"
-//                     type="password"
-//                     onChange={handleChange}
-//                     required
-//                 />
-//                 <Button type="submit" variant="contained" color="primary" fullWidth>
-//                     Login
-//                 </Button>
-//             </form>
-//             <Footer/>
-//         </Container>
-        
-//     );
-// }
-
-// export default Login;
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { TextField, Button, Container, Typography, InputAdornment, IconButton, CircularProgress } from "@mui/material"
 import axios from "axios"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link, useLocation } from "react-router-dom"
 import Footer from "./Footer"
 
 function Login() {
@@ -78,33 +12,52 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
+  const location = useLocation()
 
   // Animation keyframes
   const keyframes = `
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-    `
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes slideIn {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+      }
+      
+      @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+      }
+  `
 
   useEffect(() => {
     // Check if user is already logged in
     const token = localStorage.getItem("token")
     if (token) {
-      navigate("/dashboard")
+      // Validate token before redirecting
+      const validateToken = async () => {
+        try {
+          // Optional: You can make a lightweight API call to validate the token
+          // For now, we'll just redirect to dashboard
+          navigate("/dashboard")
+        } catch (error) {
+          // If token validation fails, clear it
+          localStorage.removeItem("token")
+        }
+      }
+
+      validateToken()
     }
-  }, [navigate])
+
+    // Check if redirected from session expiration
+    const params = new URLSearchParams(location.search)
+    if (params.get("expired") === "true") {
+      setError("Your session has expired. Please log in again.")
+    }
+  }, [navigate, location])
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -120,11 +73,18 @@ function Login() {
     try {
       const response = await axios.post("http://localhost:8080/api/login", form)
 
-      // Save token to localStorage
-      localStorage.setItem("token", response.data.token)
+      if (response.data && response.data.token) {
+        // Save token to localStorage
+        localStorage.setItem("token", response.data.token)
 
-      // Redirect to dashboard
-      navigate("/dashboard")
+        // Configure axios defaults for future requests
+        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`
+
+        // Redirect to dashboard
+        navigate("/dashboard")
+      } else {
+        setError("Invalid response from server. Please try again.")
+      }
     } catch (error) {
       console.error("Login error:", error)
       setError(error.response?.data?.message || "Login failed. Please try again.")
@@ -500,3 +460,4 @@ const inputStyle = {
 }
 
 export default Login
+
