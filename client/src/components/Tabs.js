@@ -559,6 +559,7 @@ import FilterVintageIcon from "@mui/icons-material/FilterVintage"
 import AcUnitIcon from "@mui/icons-material/AcUnit"
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn"
 import ChatBubbleIcon from "@mui/icons-material/ChatBubble"
+import { jwtDecode } from "jwt-decode"
 import Message from "./Message" // Import the Message component
 const userId = "someUserId" // Define a placeholder userId
 
@@ -574,6 +575,21 @@ function TabsComponent() {
   const seasonsRef = useRef(null)
   // Add a new state for the message modal
   const [showMessages, setShowMessages] = useState(false)
+  const [userId, setUserId] = useState(null)
+
+  useEffect(() => {
+      const token = localStorage.getItem("token")
+      if (token) {
+        try {
+          const decoded = jwtDecode(token)
+          if (decoded && decoded.id) {
+            setUserId(decoded.id)
+          }
+        } catch (error) {
+          console.error("Error decoding token:", error)
+        }
+      }
+    }, [])
 
   useEffect(() => {
     if (location.pathname === "/profile") {

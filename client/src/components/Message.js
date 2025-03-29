@@ -818,15 +818,15 @@ const Messages = ({ userId, onClose }) => {
 // Styles
 const messagesContainerStyle = {
   display: "flex",
-  height: "500px",
+  width: "100%", // Ensure it takes full width
+  height: "80vh", // Use viewport height instead of fixed pixels
   backgroundColor: "rgba(255, 255, 255, 0.1)",
   backdropFilter: "blur(10px)",
   borderRadius: "10px",
   overflow: "hidden",
   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-  margin: "20px 0",
   color: "#fff",
-  position: "relative", // Added for absolute positioning of close button
+  position: "relative",
 }
 
 // New close button style
@@ -855,7 +855,8 @@ const closeButtonStyle = {
 }
 
 const sidebarStyle = {
-  width: "300px",
+  width: "30%", // Use percentage instead of fixed pixels
+  minWidth: "250px", // But ensure a minimum width
   borderRight: "1px solid rgba(255, 255, 255, 0.1)",
   overflowY: "auto",
   padding: "15px",
@@ -923,6 +924,7 @@ const conversationStyle = {
   display: "flex",
   flexDirection: "column",
   padding: "15px",
+  minWidth: "300px", // Ensure conversation area has minimum width
 }
 
 const messagesListStyle = {
@@ -932,28 +934,32 @@ const messagesListStyle = {
   padding: "10px",
   backgroundColor: "rgba(0, 0, 0, 0.1)",
   borderRadius: "8px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px", // Add gap between messages
 }
-
 const messageBubbleStyle = {
   padding: "8px 12px",
   borderRadius: "18px",
   marginBottom: "8px",
-  maxWidth: "70%",
+  maxWidth: "80%", // Slightly increased max width
   wordWrap: "break-word",
+  position: "relative",
 }
 
 const sentBubbleStyle = {
   backgroundColor: "rgba(0, 123, 255, 0.3)",
   marginLeft: "auto",
+  marginRight: "10px", // Add some right margin
   borderBottomRightRadius: "2px",
 }
 
 const receivedBubbleStyle = {
   backgroundColor: "rgba(40, 167, 69, 0.3)",
   marginRight: "auto",
+  marginLeft: "10px", // Add some left margin
   borderBottomLeftRadius: "2px",
 }
-
 const messageTimestampStyle = {
   fontSize: "11px",
   color: "rgba(255, 255, 255, 0.6)",
@@ -968,7 +974,7 @@ const messageInputContainer = {
 }
 
 const messageInputStyle = {
-  width: "100%",
+  flex: 1, // Take remaining space
   minHeight: "80px",
   padding: "10px",
   borderRadius: "8px",
@@ -1028,7 +1034,10 @@ const inputRowStyle = {
   display: "flex",
   alignItems: "center",
   gap: "10px",
+  width: "100%", // Ensure it takes full width
 }
+
+
 
 const emojiButtonStyle = {
   background: "none",
