@@ -720,6 +720,8 @@ const Messages = ({ userId, onClose }) => {
               style={{
                 ...conversationItemStyle,
                 ...(conv.unreadCount > 0 ? unreadConversationStyle : {}),
+                ...(selectedConversation?.otherUserId === conv.otherUserId && 
+                  selectedConversation?.productId === conv.productId ? selectedConversationStyle : {})
               }}
               onClick={() => fetchMessages(conv.otherUserId, conv.productId)}
             >
@@ -729,7 +731,7 @@ const Messages = ({ userId, onClose }) => {
               </div>
               {conv.productName && <div style={productNameStyle}>About: {conv.productName}</div>}
               <div style={lastMessageStyle}>{renderLastMessage(conv)}</div>
-              <div style={messageTimeStyle}>{new Date(conv.lastMessageTime).toLocaleString()}</div>
+              <div style={messageTimeStyle}>{new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
             </div>
           ))}
         </div>
@@ -753,7 +755,8 @@ const Messages = ({ userId, onClose }) => {
                   }}
                 >
                   <div>{renderMessageContent(msg)}</div>
-                  <div style={messageTimestampStyle}>{new Date(msg.created_at).toLocaleTimeString()}</div>
+                  <div style={messageTimestampStyle}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  
                 </div>
               ))}
               <div ref={messagesEndRef} />
@@ -855,23 +858,36 @@ const closeButtonStyle = {
 }
 
 const sidebarStyle = {
-  width: "30%", // Use percentage instead of fixed pixels
-  minWidth: "250px", // But ensure a minimum width
-  borderRight: "1px solid rgba(255, 255, 255, 0.1)",
+  width: "30%",
+  minWidth: "250px",
+  borderRight: "1px solid rgba(255, 255, 255, 0.15)",
   overflowY: "auto",
   padding: "15px",
+  backgroundColor: "rgba(0, 0, 0, 0.1)",
 }
 
 const conversationListStyle = {
   marginTop: "15px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
 }
 
 const conversationItemStyle = {
-  padding: "10px",
-  marginBottom: "10px",
+  padding: "12px 15px",
   borderRadius: "8px",
   cursor: "pointer",
   transition: "all 0.2s ease",
+  backgroundColor: "rgba(255, 255, 255, 0.05)",
+  border: "1px solid rgba(255, 255, 255, 0.08)",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  }
+}
+
+const selectedConversationStyle = {
+  backgroundColor: "rgba(0, 123, 255, 0.15)",
+  border: "1px solid rgba(0, 123, 255, 0.3)",
 }
 
 const unreadConversationStyle = {
