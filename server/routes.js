@@ -312,16 +312,29 @@ router.post('/trade/request', authenticateToken, (req, res) => {
 
 
   // Assuming you have 'router' defined as an Express router and 'authenticateToken' as middleware to validate JWTs
-    router.get('/trade/pending', authenticateToken, async (req, res) => {
+    // router.get('/trades/pending', authenticateToken, async (req, res) => {
+    //     try {
+    //         // Example logic to fetch pending trades from a database
+    //         const results = await db.promise().query('SELECT * FROM trades WHERE status = "pending" AND receiver_id = ?', [req.user.id]);
+    //         res.json(results);
+    //     } catch (error) {
+    //         console.error("Error fetching pending trades:", error);
+    //         res.status(500).json({ message: "Failed to fetch pending trades." });
+    //     }
+    // });
+    router.get('/trades/pending', authenticateToken, async (req, res) => {
         try {
-            // Example logic to fetch pending trades from a database
-            const results = await db.query('SELECT * FROM trades WHERE status = "pending" AND receiver_id = ?', [req.user.id]);
+            const [results] = await db.promise().query(
+                'SELECT * FROM trades WHERE status = "pending" AND receiver_id = ?',
+                [req.user.id]
+            );
             res.json(results);
         } catch (error) {
             console.error("Error fetching pending trades:", error);
             res.status(500).json({ message: "Failed to fetch pending trades." });
         }
     });
+    
 
 
 
