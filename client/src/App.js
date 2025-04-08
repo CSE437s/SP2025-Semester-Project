@@ -5,6 +5,8 @@ import Register from "./components/Register"; // Import the Register component
 import Dashboard from "./components/Dashboard";
 import Profile from "./components/Profile";
 import ProductPage from "./components/ProductPage";
+import { UserProvider } from './components/UserContext'; // Adjust the path as necessary
+
 
 
 function App() {

@@ -19,6 +19,14 @@
 --
 -- Table structure for table `products`
 --
+CREATE TABLE `trades` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  ...
+);
+INSERT INTO `trades` VALUES
+(1,1,2,NULL,3,50,'pending','2025-02-23 05:07:10');
 
 DROP TABLE IF EXISTS `products`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

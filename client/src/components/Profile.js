@@ -46,79 +46,184 @@ function Profile() {
   }, [])
 
   // Simplified approach: fetch user profile and products in one useEffect
-  useEffect(() => {
-    const fetchUserDataAndProducts = async () => {
+  const fetchUserDataAndProducts = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem("token")
+
+      if (!token) {
+        alert("Unauthorized! Redirecting to login.")
+        navigate("/login")
+        return
+      }
+
+      // First, try to get the user ID directly from the token
+      let currentUserId = null
       try {
-        setLoading(true)
-        const token = localStorage.getItem("token")
-
-        if (!token) {
-          alert("Unauthorized! Redirecting to login.")
-          navigate("/login")
-          return
+        const decoded = jwtDecode(token)
+        if (decoded && decoded.id) {
+          currentUserId = decoded.id
+          setUserId(decoded.id)
+          console.log("User ID from token:", decoded.id)
         }
+      } catch (tokenError) {
+        console.error("Error decoding token:", tokenError)
+      }
 
-        // Step 1: Get user profile to get the user ID
-        const profileResponse = await axios.get("http://localhost:8080/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+      // If we couldn't get the user ID from the token, try the profile API
+      if (!currentUserId) {
+        try {
+          const profileResponse = await axios.get("http://localhost:8080/api/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
 
-        // Extract user ID, handling different possible field names
-        const userId =
-          profileResponse.data.id ||
-          profileResponse.data.user_id ||
-          profileResponse.data._id ||
-          profileResponse.data.userId
+          const userId =
+            profileResponse.data.id ||
+            profileResponse.data.user_id ||
+            profileResponse.data._id ||
+            profileResponse.data.userId
 
-        if (!userId) {
-          console.error("Could not determine user ID from profile response")
-          setLoading(false)
-          return
+          if (userId) {
+            currentUserId = userId
+            setUserId(userId)
+          }
+        } catch (profileError) {
+          console.error("Error fetching profile:", profileError)
+          // Continue with other requests even if profile fetch fails
         }
+      }
 
-        // Step 2: Get all products
+      // Get all products regardless of whether we have the user ID
+      try {
+        // Try to get all products
         const productsResponse = await axios.get("http://localhost:8080/api/products", {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        // Step 3: Filter products to only show those owned by the current user
-        let userProducts = []
+        console.log("All products response:", productsResponse.data)
 
-        if (Array.isArray(productsResponse.data)) {
-          userProducts = productsResponse.data.filter((product) => {
-            // Try different possible property names for owner ID
-            const productOwnerId =
-              product.owner_id || product.user_id || product.userId || product.ownerId || product.created_by
+        // If we have a user ID, filter the products
+        if (currentUserId) {
+          let userProducts = []
 
-            // Convert both to strings for comparison to avoid type mismatches
-            return String(productOwnerId) === String(userId)
-          })
+          if (Array.isArray(productsResponse.data)) {
+            userProducts = productsResponse.data.filter((product) => {
+              const productOwnerId =
+                product.owner_id || product.user_id || product.userId || product.ownerId || product.created_by
+
+              return String(productOwnerId) === String(currentUserId)
+            })
+          } else if (productsResponse.data && typeof productsResponse.data === "object") {
+            const productsArray = productsResponse.data.products || []
+            userProducts = productsArray.filter((product) => {
+              const productOwnerId =
+                product.owner_id || product.user_id || product.userId || product.ownerId || product.created_by
+              return String(productOwnerId) === String(currentUserId)
+            })
+          }
+
+          console.log("Filtered user products:", userProducts)
+          setProducts(
+            userProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          )
+          
+          setUserStats((prev) => ({
+            ...prev,
+            totalProducts: userProducts.length,
+          }))
+        } else {
+          // If we don't have a user ID, just set all products
+          const allProducts = Array.isArray(productsResponse.data)
+            ? productsResponse.data
+            : productsResponse.data?.products || []
+
+            setProducts(
+                allProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              )
+              
+          setUserStats((prev) => ({
+            ...prev,
+            totalProducts: allProducts.length,
+          }))
         }
+      } catch (productsError) {
+        console.error("Error fetching products:", productsError)
+        setProducts([])
+      }
 
-        // Step 4: Update state with the filtered products
-        setProducts(userProducts)
-        setUserStats((prev) => ({
-          ...prev,
-          totalProducts: userProducts.length,
-        }))
-
-        // Step 5: Get pending trades
+      // Try to get pending trades
+      try {
         const tradesResponse = await axios.get("http://localhost:8080/api/trade/pending", {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        setPendingTrades(tradesResponse.data || [])
-        setUserStats((prev) => ({
-          ...prev,
-          pendingRequests: tradesResponse.data?.length || 0,
-        }))
-      } catch (error) {
-        console.error("Error fetching user data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+        const pendingTradesData = Array.isArray(tradesResponse.data)
+          ? tradesResponse.data
+          : tradesResponse.data?.trades || []
 
+        // If we have a user ID, filter the trades
+        if (currentUserId) {
+          const userTrades = pendingTradesData.filter((trade) => {
+            const tradeReceiverId = trade.receiver_id || trade.receiverId
+            return String(tradeReceiverId) === String(currentUserId)
+          })
+
+          setPendingTrades(userTrades)
+          setUserStats((prev) => ({
+            ...prev,
+            pendingRequests: userTrades.length || 0,
+          }))
+        } else {
+          setPendingTrades(pendingTradesData)
+          setUserStats((prev) => ({
+            ...prev,
+            pendingRequests: pendingTradesData.length || 0,
+          }))
+        }
+      } catch (tradeError) {
+        console.error("Error fetching pending trades:", tradeError)
+        // Try alternative endpoint
+        try {
+          const altTradesResponse = await axios.get("http://localhost:8080/api/trades/pending", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+
+          const pendingTradesData = Array.isArray(altTradesResponse.data)
+            ? altTradesResponse.data
+            : altTradesResponse.data?.trades || []
+
+          // If we have a user ID, filter the trades
+          if (currentUserId) {
+            const userTrades = pendingTradesData.filter((trade) => {
+              const tradeReceiverId = trade.receiver_id || trade.receiverId
+              return String(tradeReceiverId) === String(currentUserId)
+            })
+
+            setPendingTrades(userTrades)
+            setUserStats((prev) => ({
+              ...prev,
+              pendingRequests: userTrades.length || 0,
+            }))
+          } else {
+            setPendingTrades(pendingTradesData)
+            setUserStats((prev) => ({
+              ...prev,
+              pendingRequests: pendingTradesData.length || 0,
+            }))
+          }
+        } catch (altError) {
+          console.error("Error fetching from alternative trades endpoint:", altError)
+          setPendingTrades([])
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchUserDataAndProducts()
   }, [navigate])
 
@@ -149,6 +254,10 @@ function Profile() {
   const handleTradeRequestAction = async (tradeId, action) => {
     try {
       const token = localStorage.getItem("token")
+
+      // Log the action for debugging
+      console.log(`Attempting to ${action} trade with ID: ${tradeId}`)
+
       const response = await axios.post(
         `http://localhost:8080/api/trade/${action}/${tradeId}`,
         {},
@@ -171,19 +280,44 @@ function Profile() {
 
       console.log("Trade action response:", response.data)
 
-      // Update pending trades
-      const updatedTradesResponse = await axios.get("http://localhost:8080/api/trade/pending", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      // Refresh the pending trades list
+      try {
+        const updatedTradesResponse = await axios.get("http://localhost:8080/api/trade/pending", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
 
-      setPendingTrades(updatedTradesResponse.data || [])
+        const pendingTradesData = Array.isArray(updatedTradesResponse.data) ? updatedTradesResponse.data : []
+        setPendingTrades(pendingTradesData)
 
-      // Update stats
-      setUserStats((prev) => ({
-        ...prev,
-        pendingRequests: updatedTradesResponse.data?.length || 0,
-        completedTrades: action === "accept" ? prev.completedTrades + 1 : prev.completedTrades,
-      }))
+        // Update stats
+        setUserStats((prev) => ({
+          ...prev,
+          pendingRequests: pendingTradesData.length || 0,
+          completedTrades: action === "accept" ? prev.completedTrades + 1 : prev.completedTrades,
+        }))
+      } catch (error) {
+        console.error("Error refreshing pending trades:", error)
+        // Try alternative endpoint
+        try {
+          const altTradesResponse = await axios.get("http://localhost:8080/api/trades/pending", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+
+          const pendingTradesData = Array.isArray(altTradesResponse.data) ? altTradesResponse.data : []
+          setPendingTrades(pendingTradesData)
+
+          // Update stats
+          setUserStats((prev) => ({
+            ...prev,
+            pendingRequests: pendingTradesData.length || 0,
+            completedTrades: action === "accept" ? prev.completedTrades + 1 : prev.completedTrades,
+          }))
+        } catch (altError) {
+          console.error("Error fetching from alternative trades endpoint:", altError)
+          // If both fail, just remove the trade that was actioned from the current list
+          setPendingTrades((prevTrades) => prevTrades.filter((trade) => (trade.id || trade._id) !== tradeId))
+        }
+      }
     } catch (error) {
       console.error(`Error ${action}ing trade request:`, error)
       setNotification({
@@ -733,10 +867,12 @@ function Profile() {
                         </tr>
                       </thead>
                       <tbody>
-                        {pendingTrades.map((trade) => (
-                          <tr key={trade.id} style={tableRowStyle}>
-                            <td style={{ fontWeight: "500" }}>{trade.id}</td>
-                            <td>{trade.requested_item_id}</td>
+                        {pendingTrades.map((trade, index) => (
+                          <tr key={trade.id || trade._id || index} style={tableRowStyle}>
+                            <td style={{ fontWeight: "500" }}>{trade.id || trade._id || "N/A"}</td>
+                            <td>
+                              {trade.requested_item_id || trade.requestedItemId || trade.productName || "Unknown Item"}
+                            </td>
                             <td>
                               <span
                                 style={{
@@ -748,13 +884,13 @@ function Profile() {
                                   fontWeight: "bold",
                                 }}
                               >
-                                {trade.coins_offered} coins
+                                {trade.coins_offered || trade.coinsOffered || 0} coins
                               </span>
                             </td>
                             <td>
                               <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                                 <button
-                                  onClick={() => handleTradeRequestAction(trade.id, "accept")}
+                                  onClick={() => handleTradeRequestAction(trade.id || trade._id, "accept")}
                                   style={{
                                     padding: "8px 16px",
                                     backgroundColor: "rgba(76, 175, 80, 0.2)",
@@ -775,7 +911,7 @@ function Profile() {
                                   Accept
                                 </button>
                                 <button
-                                  onClick={() => handleTradeRequestAction(trade.id, "decline")}
+                                  onClick={() => handleTradeRequestAction(trade.id || trade._id, "decline")}
                                   style={{
                                     padding: "8px 16px",
                                     backgroundColor: "rgba(244, 67, 54, 0.2)",
