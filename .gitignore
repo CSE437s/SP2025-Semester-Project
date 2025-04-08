@@ -1,0 +1,12 @@
+# For both client and server
+node_modules/
+*.log
+.cache/
+.DS_Store
+
+# Client-specific
+client/build/
+
+# Server-specific
+server/.env
+
