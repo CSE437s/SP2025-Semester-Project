@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import TabsComponent from "./Tabs"
 import Footer from "./Footer"
+import { trackUserInteraction } from "./utils/tracking"
+import RecommendationSection from "./RecommendationSection"
 
 // Configure axios to use the token from localStorage for all requests
 const setupAxiosInterceptors = () => {
@@ -329,6 +331,7 @@ function Dashboard() {
   }, [navigate])
 
   const handleSeasonClick = (category) => {
+    trackUserInteraction('SEASON_CLICK', { season: category });
     navigate(`/products/${category}`)
   }
 
@@ -1374,6 +1377,8 @@ function Dashboard() {
               </div>
             ))}
           </div>
+          
+<RecommendationSection allProducts={[]}/>
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import Message from "./Message"
 import Footer from "./Footer"
 import { MessageCircle, Coins, ArrowRight, X } from "lucide-react"
 import { jwtDecode } from "jwt-decode"
+import { trackUserInteraction } from "./utils/tracking"
 
 // Season-specific styling
 const seasonStyles = {
@@ -159,8 +160,26 @@ function ProductPage() {
     setMessageContent("")
   }
 
+  const trackProductInteraction = (product, interactionType) => {
+    trackUserInteraction(interactionType, {
+      productId: product.id,
+      name: product.product_name,
+      image: product.product_image,
+      season: season // current season from URL params
+    });
+  };
+
+  // Track product views when component mounts
+  
+  useEffect(() => {
+    products.forEach(product => {
+      trackProductInteraction(product, 'PRODUCT_VIEW');
+    });
+  }, [products]);
+
   const handleTradeSubmit = async () => {
     try {
+      trackUserInteraction(selectedProduct, 'TRADE_ATTEMPT');
       const token = localStorage.getItem("token")
       const receiverId = selectedProduct.owner_id
       const requestedItemId = selectedProduct.id
@@ -281,6 +300,8 @@ function ProductPage() {
       100% { transform: translateY(0px); }
     }
   `
+
+
 
   if (loading) {
     return (
