@@ -124,43 +124,45 @@ function TabsComponent() {
       handleMenuClose()
     }
 
+    navigate(`/products/${seasonIndex}`)
+
     // If not on dashboard, navigate there first
-    if (location.pathname !== "/dashboard") {
-      navigate("/dashboard")
-      // Need to wait for navigation to complete before scrolling
-      setTimeout(() => {
-        const seasonsSection = document.querySelector(".seasons-section")
-        if (seasonsSection) {
-          seasonsSection.scrollIntoView({ behavior: "smooth" })
+    // if (location.pathname !== "/dashboard") {
+    //   navigate("/dashboard")
+    //   // Need to wait for navigation to complete before scrolling
+    //   setTimeout(() => {
+    //     const seasonsSection = document.querySelector(".seasons-section")
+    //     if (seasonsSection) {
+    //       seasonsSection.scrollIntoView({ behavior: "smooth" })
 
-          // If a specific season card is requested, scroll to it
-          if (seasonIndex !== undefined) {
-            const seasonCards = document.querySelectorAll(".season-card")
-            if (seasonCards && seasonCards[seasonIndex]) {
-              setTimeout(() => {
-                seasonCards[seasonIndex].scrollIntoView({ behavior: "smooth" })
-              }, 500)
-            }
-          }
-        }
-      }, 300)
-    } else {
-      // Already on dashboard, just scroll
-      const seasonsSection = document.querySelector(".seasons-section")
-      if (seasonsSection) {
-        seasonsSection.scrollIntoView({ behavior: "smooth" })
+    //       // If a specific season card is requested, scroll to it
+    //       if (seasonIndex !== undefined) {
+    //         const seasonCards = document.querySelectorAll(".season-card")
+    //         if (seasonCards && seasonCards[seasonIndex]) {
+    //           setTimeout(() => {
+    //             seasonCards[seasonIndex].scrollIntoView({ behavior: "smooth" })
+    //           }, 500)
+    //         }
+    //       }
+    //     }
+    //   }, 300)
+    // } else {
+    //   // Already on dashboard, just scroll
+    //   const seasonsSection = document.querySelector(".seasons-section")
+    //   if (seasonsSection) {
+    //     seasonsSection.scrollIntoView({ behavior: "smooth" })
 
-        // If a specific season card is requested, scroll to it
-        if (seasonIndex !== undefined) {
-          const seasonCards = document.querySelectorAll(".season-card")
-          if (seasonCards && seasonCards[seasonIndex]) {
-            setTimeout(() => {
-              seasonCards[seasonIndex].scrollIntoView({ behavior: "smooth" })
-            }, 500)
-          }
-        }
-      }
-    }
+    //     // If a specific season card is requested, scroll to it
+    //     if (seasonIndex !== undefined) {
+    //       const seasonCards = document.querySelectorAll(".season-card")
+    //       if (seasonCards && seasonCards[seasonIndex]) {
+    //         setTimeout(() => {
+    //           seasonCards[seasonIndex].scrollIntoView({ behavior: "smooth" })
+    //         }, 500)
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   useEffect(() => {
@@ -269,25 +271,25 @@ function TabsComponent() {
       </List>
       <Divider sx={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
       <List>
-        <ListItem button onClick={() => scrollToSeasons(0)}>
+        <ListItem button onClick={() => scrollToSeasons('spring')}>
           <ListItemIcon sx={{ color: "#a8e6cf" }}>
             <LocalFloristIcon />
           </ListItemIcon>
           <ListItemText primary="Spring" sx={{ color: "white" }} />
         </ListItem>
-        <ListItem button onClick={() => scrollToSeasons(1)}>
+        <ListItem button onClick={() => scrollToSeasons('summer')}>
           <ListItemIcon sx={{ color: "#ffdfba" }}>
             <WbSunnyIcon />
           </ListItemIcon>
           <ListItemText primary="Summer" sx={{ color: "white" }} />
         </ListItem>
-        <ListItem button onClick={() => scrollToSeasons(2)}>
+        <ListItem button onClick={() => scrollToSeasons('autumn')}>
           <ListItemIcon sx={{ color: "#ffb7b2" }}>
             <FilterVintageIcon />
           </ListItemIcon>
           <ListItemText primary="Autumn" sx={{ color: "white" }} />
         </ListItem>
-        <ListItem button onClick={() => scrollToSeasons(3)}>
+        <ListItem button onClick={() => scrollToSeasons('winter')}>
           <ListItemIcon sx={{ color: "#b5c9df" }}>
             <AcUnitIcon />
           </ListItemIcon>
@@ -414,7 +416,7 @@ function TabsComponent() {
                   }}
                 >
                   <MenuItem
-                    onClick={() => scrollToSeasons(0)}
+                    onClick={() => scrollToSeasons('spring')}
                     sx={{
                       color: "white",
                       "&:hover": { backgroundColor: "rgba(168, 230, 207, 0.2)" },
@@ -426,7 +428,7 @@ function TabsComponent() {
                     <Typography>Spring</Typography>
                   </MenuItem>
                   <MenuItem
-                    onClick={() => scrollToSeasons(1)}
+                    onClick={() => scrollToSeasons('summer')}
                     sx={{
                       color: "white",
                       "&:hover": { backgroundColor: "rgba(255, 223, 186, 0.2)" },
@@ -438,7 +440,7 @@ function TabsComponent() {
                     <Typography>Summer</Typography>
                   </MenuItem>
                   <MenuItem
-                    onClick={() => scrollToSeasons(2)}
+                    onClick={() => scrollToSeasons('autumn')}
                     sx={{
                       color: "white",
                       "&:hover": { backgroundColor: "rgba(255, 183, 178, 0.2)" },
@@ -450,7 +452,7 @@ function TabsComponent() {
                     <Typography>Autumn</Typography>
                   </MenuItem>
                   <MenuItem
-                    onClick={() => scrollToSeasons(3)}
+                    onClick={() => scrollToSeasons('winter')}
                     sx={{
                       color: "white",
                       "&:hover": { backgroundColor: "rgba(181, 201, 223, 0.2)" },
