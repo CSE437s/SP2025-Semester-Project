@@ -134,6 +134,19 @@ function ProductPage() {
     setShowForm(!showForm)
   }
 
+  const fetchUserById = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`http://localhost:8080/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  };
+
   // Fetch products for the current season
   const fetchProducts = async () => {
     try {
@@ -150,7 +163,17 @@ function ProductPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      setProducts(response.data)
+      const productsWithOwners = await Promise.all(
+        response.data.map(async (product) => {
+          const owner = await fetchUserById(product.owner_id);
+          return {
+            ...product,
+            ownerUsername: owner ? owner.username : "Unknown",
+          };
+        })
+      );
+
+      setProducts(productsWithOwners)
     } catch (error) {
       console.error("Error fetching products:", error)
       alert("Failed to fetch products. Please try again.")
@@ -162,6 +185,8 @@ function ProductPage() {
   useEffect(() => {
     fetchProducts()
   }, [season, navigate])
+
+  
 
 
 
@@ -970,6 +995,10 @@ function ProductPage() {
                   >
                     {product.product_name}
                   </h3>
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
+    Posted by: {product.ownerUsername}
+  </p>
+  <br/>
 
                   <p
                     style={{
@@ -1200,7 +1229,11 @@ function ProductPage() {
                     }}
                   >
                     {selectedProduct?.product_name}
+                
                   </h3>
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
+                  Posted by: {selectedProduct?.ownerUsername}
+                </p>
                   <p
                     style={{
                       margin: "0",
@@ -1213,6 +1246,7 @@ function ProductPage() {
                     }}
                   >
                     {selectedProduct?.product_description}
+                    
                   </p>
                 </div>
               </div>
@@ -1492,6 +1526,9 @@ function ProductPage() {
                   >
                     {selectedProduct?.product_name}
                   </h3>
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
+    Posted by: {selectedProduct?.ownerUsername}
+  </p>
                   <p
                     style={{
                       margin: "0",

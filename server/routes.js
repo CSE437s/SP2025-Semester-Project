@@ -727,3 +727,34 @@ router.get('/messages/conversations', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch conversations' });
     }
 });
+
+// get username from owner_id
+// Add this to your routes file (e.g., routes/users.js)
+router.get("/users/:id", authenticateToken, async (req, res) => {
+    try {
+        // Get user ID from URL params
+        const userId = req.params.id;
+        
+        // Query the database for the user
+        const [user] = await db.promise().query(
+            "SELECT id, username, email, created_at, coins FROM users WHERE id = ?", 
+            [userId]
+        );
+
+        if (user.length === 0) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Return basic user info (excluding sensitive data like password)
+        res.json({
+            id: user[0].id,
+            username: user[0].username,
+            email: user[0].email,
+            created_at: user[0].created_at,
+            coins: user[0].coins
+        });
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: "Failed to fetch user." });
+    }
+});
