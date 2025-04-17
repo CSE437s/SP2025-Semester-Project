@@ -9,6 +9,7 @@ import Footer from "./Footer"
 import { MessageCircle, Coins, ArrowRight, X } from "lucide-react"
 import { jwtDecode } from "jwt-decode"
 import { trackUserInteraction } from "./utils/tracking"
+import { Plus } from "lucide-react"
 
 // Season-specific styling
 const seasonStyles = {
@@ -67,6 +68,10 @@ function ProductPage() {
   const [messageContent, setMessageContent] = useState("")
   const [userId, setUserId] = useState(null)
   const [showMessages, setShowMessages] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [productName, setProductName] = useState("")
+  const [productDescription, setProductDescription] = useState("")
+  const [productImage, setProductImage] = useState(null)
 
   // Get user ID from token
   useEffect(() => {
@@ -85,6 +90,80 @@ function ProductPage() {
 
   // Get season-specific styling
   const currentSeasonStyle = seasonStyles[season] || seasonStyles.spring
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    const formData = new FormData()
+    formData.append("productName", productName)
+    formData.append("suitableSeason", season) // Automatically set to current season
+    formData.append("productDescription", productDescription)
+    if (productImage) {
+      formData.append("productImage", productImage)
+    }
+
+    try {
+      const token = localStorage.getItem("token")
+      const response = await axios.post("http://localhost:8080/api/submit-product", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      alert(response.data.message)
+
+      // Reset form and refresh products
+      setProductName("")
+      setProductDescription("")
+      setProductImage(null)
+      setShowForm(false)
+      fetchProducts()
+    } catch (error) {
+      console.error("Error submitting product:", error)
+      alert("There was an error submitting your product.")
+    }
+  }
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0]
+    setProductImage(file)
+  }
+
+  const toggleForm = () => {
+    setShowForm(!showForm)
+  }
+
+  // Fetch products for the current season
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem("token")
+
+      if (!token) {
+        alert("Unauthorized! Redirecting to login.")
+        navigate("/login")
+        return
+      }
+
+      const response = await axios.get(`http://localhost:8080/api/products/${season}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      setProducts(response.data)
+    } catch (error) {
+      console.error("Error fetching products:", error)
+      alert("Failed to fetch products. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchProducts()
+  }, [season, navigate])
+
+
 
   const handleTradeClick = async (product) => {
     setSelectedProduct(product)
@@ -410,6 +489,7 @@ function ProductPage() {
             zIndex: 2,
             maxWidth: "800px",
             padding: "0 2rem",
+            marginTop: "-2rem"
           }}
         >
           <div
@@ -445,8 +525,237 @@ function ProductPage() {
           >
             {currentSeasonStyle.description}
           </p>
+              
+            {/* Add Product Button */}
+          <button
+            onClick={toggleForm}
+            style={{
+              marginTop: "2rem",
+              padding: "12px 24px",
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              color: "white",
+              border: "1px solid white",
+              borderRadius: "30px",
+              cursor: "pointer",
+              fontSize: "1rem",
+              fontWeight: "500",
+              transition: "all 0.3s ease",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.3)"
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)"
+            }}
+          >
+            <Plus size={18} />
+            {showForm ? "Close Form" : "Add Product"}
+          </button>
         </div>
       </div>
+
+      {/* Product Submission Form */}
+      {showForm && (
+        <div
+          style={{
+            padding: "3rem 2rem",
+            maxWidth: "800px",
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+              padding: "2rem",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "1.8rem",
+                fontWeight: "400",
+                marginBottom: "1.5rem",
+                color: currentSeasonStyle.primary,
+              }}
+            >
+              Add New {season.charAt(0).toUpperCase() + season.slice(1)} Product
+            </h2>
+
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontSize: "0.9rem",
+                    fontWeight: "500",
+                    color: "#555",
+                  }}
+                >
+                  Product Name
+                </label>
+                <input
+                  type="text"
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.9rem 1rem",
+                    borderRadius: "8px",
+                    border: "1px solid #ddd",
+                    fontSize: "1rem",
+                    transition: "all 0.3s ease",
+                  }}
+                  placeholder="Enter product name"
+                />
+              </div>
+
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontSize: "0.9rem",
+                    fontWeight: "500",
+                    color: "#555",
+                  }}
+                >
+                  Description
+                </label>
+                <textarea
+                  value={productDescription}
+                  onChange={(e) => setProductDescription(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.9rem 1rem",
+                    borderRadius: "8px",
+                    border: "1px solid #ddd",
+                    fontSize: "1rem",
+                    minHeight: "120px",
+                    resize: "vertical",
+                    transition: "all 0.3s ease",
+                  }}
+                  placeholder="Describe your product"
+                />
+              </div>
+
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontSize: "0.9rem",
+                    fontWeight: "500",
+                    color: "#555",
+                  }}
+                >
+                  Product Image
+                </label>
+                <div
+                  style={{
+                    border: "2px dashed #ddd",
+                    borderRadius: "8px",
+                    padding: "1.5rem",
+                    textAlign: "center",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <input
+                    type="file"
+                    onChange={handleImageUpload}
+                    required
+                    style={{ display: "none" }}
+                    id="product-image"
+                  />
+                  <label
+                    htmlFor="product-image"
+                    style={{
+                      cursor: "pointer",
+                      display: "block",
+                    }}
+                  >
+                    {productImage ? (
+                      <div
+                        style={{
+                          marginBottom: "1rem",
+                          color: currentSeasonStyle.primary,
+                          fontWeight: "500",
+                        }}
+                      >
+                        {productImage.name}
+                      </div>
+                    ) : (
+                      <>
+                        <svg
+                          width="40"
+                          height="40"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#888"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ margin: "0 auto 1rem" }}
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p style={{ margin: 0, color: "#666" }}>Click to upload product image</p>
+                      </>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem"}}>
+                <button
+                  type="button"
+                  onClick={toggleForm}
+                  style={{
+                    padding: "0.9rem 1.5rem",
+                    backgroundColor: "#f1f1f1",
+                    color: "#666",
+                    margin:"0 auto 2rem",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: "0.9rem 1.5rem",
+                    backgroundColor: currentSeasonStyle.primary,
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  Submit Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      
 
       {/* Products Section */}
       <div
