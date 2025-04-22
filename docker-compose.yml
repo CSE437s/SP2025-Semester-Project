@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: ./ski_slopes
+      dockerfile: ./Dockerfile
+    container_name: ski_slopes_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_SUPABASE_URL=${SUPABASE_URL:-http://localhost:54321}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+    volumes:
+      - ./ski_slopes:/app
+      - /app/node_modules
+    networks:
+      - ski_slopes_network
+    restart: unless-stopped
+  
+  # Backend service
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ski_slopes_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - SUPABASE_URL=${SUPABASE_URL:-http://localhost:54321}
+      - SUPABASE_KEY=${SUPABASE_KEY:-your-supabase-key}
+      - SKI_WEATHER_API_KEY=${SKI_WEATHER_API_KEY:-a38c8d1d96304461b7d170052251803}
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      - db
+    networks:
+      - ski_slopes_network
+    restart: unless-stopped
+
+  # This is a local database for development only
+  # Your actual app should use the Supabase service
+  db:
+    image: postgres:15
+    container_name: ski_slopes_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ski_slopes_network
+    restart: unless-stopped
+
+networks:
+  ski_slopes_network:
+    driver: bridge
+
+volumes:
+  pgdata: 

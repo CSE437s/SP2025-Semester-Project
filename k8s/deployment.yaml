@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ski-slopes-db
+  labels:
+    app: ski-slopes-db
+spec:
+  selector:
+    matchLabels:
+      app: ski-slopes-db
+  replicas: 1
+  serviceName: ski-slopes-db
+  template:
+    metadata:
+      labels:
+        app: ski-slopes-db
+    spec:
+      containers:
+        - image: docker.io/library/postgres:15
+          name: ski-slopes-db
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: postgres
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ski-slopes-db
+spec:
+  selector:
+    app: ski-slopes-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ski-slopes-backend
+  labels:
+    app: ski-slopes-backend
+spec:
+  selector:
+    matchLabels:
+      app: ski-slopes-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ski-slopes-backend
+    spec:
+      containers:
+        - image: ski-slopes-backend:release
+          imagePullPolicy: IfNotPresent
+          name: ski-slopes-backend
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: postgresql://postgres:postgres@ski-slopes-db:5432/postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ski-slopes-backend
+spec:
+  selector:
+    app: ski-slopes-backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ski-slopes-frontend
+  labels:
+    app: ski-slopes-frontend
+spec:
+  selector:
+    matchLabels:
+      app: ski-slopes-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ski-slopes-frontend
+    spec:
+      containers:
+        - image: ski-slopes-frontend:release
+          imagePullPolicy: IfNotPresent
+          name: ski-slopes-frontend
+          command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+          ports:
+            - containerPort: 5173
+          env:
+            - name: VITE_SUPABASE_URL
+              value: http://localhost:54321
+            - name: VITE_SUPABASE_ANON_KEY
+              value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ski-slopes-frontend
+spec:
+  selector:
+    app: ski-slopes-frontend
+  ports:
+    - port: 5173
+      targetPort: 5173
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ski-slopes-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /api
+            backend:
+              service:
+                name: ski-slopes-backend
+                port:
+                  number: 8000
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ski-slopes-frontend
+                port:
+                  number: 5173 
