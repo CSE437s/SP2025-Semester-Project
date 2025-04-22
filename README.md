@@ -1,19 +1,54 @@
-# SP2025: Group &lt;Group Number&gt; &lt;Project Name&gt;
+# SP2025: Group 2 - Hater Fantasy League (HFL)
 
-Name your repository using the following format:  
-**SP2025_Group_&lt;Group Number&gt;**  
-(Example: SP2025_Group_9)
+## 📌 Project Overview 
+
+Hater Fantasy League (HFL) is a playful, community-driven app where sports fans draft players or teams they predict will perform the worst each week. Instead of cheering for wins, users earn points for:
+- ❌ Turnovers  
+- ❌ Missed shots  
+- ❌ Fouls  
+- ❌ Embarrassing moments  
+
+Climb the leaderboards by assembling the worst-performing "Flop Squad"!  
+Engage in weekly challenges and trash-talk zones for friendly competition.  
 
 ## Team Members
-- **&lt;Member Name&gt;**: &lt;Email Address&gt; ; &lt;Github ID&gt;
-- **&lt;Member Name&gt;**: &lt;Email Address&gt; ; &lt;Github ID&gt;
-- **&lt;Member Name&gt;**: &lt;Email Address&gt; ; &lt;Github ID&gt;
+| Name            | Email                  | GitHub Profile |
+|----------------|------------------------|---------------|
+| Abdou Sow  | [a.sow@wustl.edu](mailto:a.sow@wustl.edu) | [asow211](https://github.com/asow211) |
+| Andrew Feenstra | [a.feenstra@wustl.edu](mailto:a.feenstra@wustl.edu) | [andrewjf04](https://github.com/andrewjf04) |
+| Kanan Ahmadov | [a.kanan@wustl.edu](mailto:a.kanan@wustl.edu) | [kananahmadov2001](https://github.com/kananahmadov2001) |
+| Weikai Rao | [r.weikai@wustl.edu](mailto:r.weikai@wustl.edu) | [KennyRao](https://github.com/KennyRao) |
 
-## TA
-&lt;Name of your group's TA&gt;
+## Teaching Assistant
+Victor Durojaiye 
 
-## Objectives
-&lt;Description of what your project is about, your key functionalities, tech stacks used, etc. &gt;
+## Tech Stack
 
-## How to Run
-&lt;Instructions for how to run your project. Include the URI to your project at the top if applicable.&gt;
+- Frontend: React.js
+- Backend: Next.js
+- Database: MySQL
+
+## How to Run the Project
+
+### Prerequisites  
+Ensure you have the following installed:
+- **Node.js**
+- **npm** (Node Package Manager)
+
+### Clone the Repository  
+```bash
+git clone https://github.com/YOUR-REPO/SP2025-Semester-Project.git
+cd SP2025-Semester-Project/react-frontend
+```
+### Install the Dependencies
+```
+npm install
+```
+### Run the Dev Server
+```
+npm run dev
+```
+### Access
+```
+http://localhost:5173/
+```
