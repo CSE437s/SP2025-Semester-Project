@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+motor
+python-dotenv
+httpx
+requests
+supabase
