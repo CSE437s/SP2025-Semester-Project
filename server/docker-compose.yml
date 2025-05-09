@@ -1,0 +1,35 @@
+services:
+  backend:
+    build: ./server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server:/app
+    depends_on:
+      - db
+    env_file:
+      - ./server/.env
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+     - ./client:/app
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Admin@802301
+      MYSQL_DATABASE: mydatabase
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
